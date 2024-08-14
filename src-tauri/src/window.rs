@@ -1,0 +1,129 @@
+// modified from https://github.com/pot-app/pot-desktop/blob/master/src-tauri/src/window.rs
+
+
+use tauri::Manager;
+use tauri::Monitor;
+use tauri::Window;
+use tauri::WindowBuilder;
+use window_shadows::set_shadow;
+use crate::APP;
+
+// Get daemon window instance
+fn get_daemon_window() -> Window {
+    let app_handle = APP.get().unwrap();
+    match app_handle.get_window("daemon") {
+        Some(v) => v,
+        None => {
+            eprintln!("Daemon window not found, create new daemon window!");
+            WindowBuilder::new(
+                app_handle,
+                "daemon",
+                tauri::WindowUrl::App("daemon.html".into()),
+            )
+                .title("Daemon")
+                .additional_browser_args("--disable-web-security")
+                .visible(false)
+                .build()
+                .unwrap()
+        }
+    }
+}
+
+// Get monitor where the mouse is currently located
+fn get_current_monitor(x: i32, y: i32) -> Monitor {
+    eprintln!("Mouse position: {}, {}", x, y);
+    let daemon_window = get_daemon_window();
+    let monitors = daemon_window.available_monitors().unwrap();
+
+    for m in monitors {
+        let size = m.size();
+        let position = m.position();
+
+        if x >= position.x
+            && x <= (position.x + size.width as i32)
+            && y >= position.y
+            && y <= (position.y + size.height as i32)
+        {
+            eprintln!("Current Monitor: {:?}", m);
+            return m;
+        }
+    }
+    eprintln!("Current Monitor not found, using primary monitor");
+    daemon_window.primary_monitor().unwrap().unwrap()
+}
+
+// Creating a window on the mouse monitor
+fn build_window(label: &str, title: &str) -> (Window, bool) {
+    use mouse_position::mouse_position::{Mouse, Position};
+
+    let mouse_position = match Mouse::get_mouse_position() {
+        Mouse::Position { x, y } => Position { x, y },
+        Mouse::Error => {
+            eprintln!("Mouse position not found, using (0, 0) as default");
+            Position { x: 0, y: 0 }
+        }
+    };
+    let current_monitor = get_current_monitor(mouse_position.x, mouse_position.y);
+    let position = current_monitor.position();
+
+    let app_handle = APP.get().unwrap();
+    match app_handle.get_window(label) {
+        Some(v) => {
+            eprintln!("Window existence: {}", label);
+            v.set_focus().unwrap();
+            (v, true)
+        }
+        None => {
+            eprintln!("Window not existence, Creating new window: {}", label);
+            let mut builder = tauri::WindowBuilder::new(
+                app_handle,
+                label,
+                tauri::WindowUrl::App("index.html".into()),
+            )
+                .position(position.x.into(), position.y.into())
+                .additional_browser_args("--disable-web-security")
+                .focused(true)
+                .title(title)
+                .visible(false);
+
+            #[cfg(target_os = "macos")]
+            {
+                builder = builder
+                    .title_bar_style(tauri::TitleBarStyle::Overlay)
+                    .hidden_title(true);
+            }
+            #[cfg(not(target_os = "macos"))]
+            {
+                builder = builder.transparent(true).decorations(false);
+            }
+            let window = builder.build().unwrap();
+
+            if label != "screenshot" {
+                #[cfg(not(target_os = "linux"))]
+                set_shadow(&window, true).unwrap_or_default();
+            }
+            let _ = window.current_monitor();
+            (window, false)
+        }
+    }
+}
+
+fn screenshot_window() -> Window {
+    let (window, _exists) = build_window("screenshot", "Screenshot");
+
+    window.set_skip_taskbar(true).unwrap();
+    
+    #[cfg(target_os = "macos")]
+    {
+        let monitor = window.current_monitor().unwrap().unwrap();
+        let size = monitor.size();
+        window.set_decorations(false).unwrap();
+        window.set_size(*size).unwrap();
+    }
+
+    #[cfg(not(target_os = "macos"))]
+    window.set_fullscreen(true).unwrap();
+
+    window.set_always_on_top(true).unwrap();
+    window
+}
