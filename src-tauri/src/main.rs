@@ -43,7 +43,7 @@ async fn inference(path: String,model:State<'_,Model>,window: tauri::Window) -> 
         let stop_arc = Arc::clone(&stop);
         window.once("stop", move |_| stop_arc.store(true, Ordering::SeqCst));
         let res = (*model.model.lock().map_err(|err|{ err.to_string() })?)
-            .inference_by_step(&preprocess(path),|s|{
+            .inference_by_step(&preprocess(path)?,|s|{
                 window.emit("result",Payload{token:s}).expect("Send result fail!");
                 stop.load(Ordering::SeqCst)
             }).map_err(|err|{ err.to_string() })?;
@@ -58,34 +58,25 @@ async fn inference(path: String,model:State<'_,Model>,window: tauri::Window) -> 
 
 
 fn main() {
-    let model = MixTexOnnx::build().expect("Fail load model!");
 
     tauri::Builder::default()
         .plugin(tauri_plugin_single_instance::init(|app, _, cwd| {
             Notification::new(&app.config().tauri.bundle.identifier)
                 .title("The program is already running. Please do not start it again!")
                 .body(cwd)
-                // .icon("pot")
+                .icon("pot")
                 .show()
                 .unwrap();
         }))
+        .plugin(tauri_plugin_clipboard::init())
         .system_tray(tauri::SystemTray::new())
         .setup(|app|{
 
+            // let clipboard = app.app_handle().state::<tauri_plugin_clipboard::ClipboardManager>();
+            // clipboard.read_image_binary().unwrap();
+
             // global app handle
             APP.get_or_init(|| app.handle());
-
-            // register global shortcut
-            match  register(APP.get().unwrap(),"call",||{},"CommandOrControl+Shift+X"){
-                Ok(()) => {}
-                Err(e) => Notification::new(app.config().tauri.bundle.identifier.clone())
-                    .title("Failed to register global shortcut")
-                    .body(&e)
-                    .show()
-                    .unwrap(),
-            }
-
-            update_tray(app.app_handle());
 
             // set window effect
             let window = app.get_window("main").unwrap();
@@ -98,10 +89,30 @@ fn main() {
             #[cfg(target_os = "windows")]
             apply_acrylic(&window, Some((18, 18, 18, 125))).expect("Unsupported platform! 'apply_blur' is only supported on Windows");
 
+
+            tauri::async_runtime::spawn(async move {
+                let app_handle = APP.get().unwrap();
+                app_handle.manage(Model{model:Mutex::new(MixTexOnnx::build().expect("Fail load model!"))});
+
+                // register global shortcut
+                match  register(app_handle,"call",||{},"CommandOrControl+Shift+X"){
+                    Ok(()) => {}
+                    Err(e) => Notification::new(app_handle.config().tauri.bundle.identifier.clone())
+                        .title("Failed to register global shortcut")
+                        .body(&e)
+                        .icon("MixTex")
+                        .show()
+                        .unwrap(),
+                }
+
+                update_tray(app_handle);
+
+
+            });
+
             Ok(())
         }
         )
-        .manage(Model{model:Mutex::new(model)})
         .invoke_handler(tauri::generate_handler![greet,inference])
         .on_system_tray_event(tray_event_handler)
         .build(tauri::generate_context!())

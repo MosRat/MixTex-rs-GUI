@@ -668,12 +668,25 @@ dependencies = [
 ]
 
 [[package]]
+name = "clipboard-rs"
+version = "0.1.11"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "c718c0784ab208e35cc764e8b3f864caf5cd82a65d793fb99ddb3565ae028726"
+dependencies = [
+ "clipboard-win",
+ "cocoa 0.25.0",
+ "image 0.25.2",
+ "x11rb",
+]
+
+[[package]]
 name = "clipboard-win"
 version = "5.4.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "15efe7a882b08f34e38556b14f2fb3daa98769d06c7f0c1b076dfd0d983bc892"
 dependencies = [
  "error-code",
+ "windows-win",
 ]
 
 [[package]]
@@ -2110,7 +2123,13 @@ dependencies = [
  "bytemuck",
  "byteorder",
  "color_quant",
+ "exr",
+ "gif",
+ "jpeg-decoder",
  "num-traits",
+ "png",
+ "qoi",
+ "tiff",
 ]
 
 [[package]]
@@ -2320,6 +2339,9 @@ name = "jpeg-decoder"
 version = "0.3.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "f5d4a7da358eff58addd2877a45865158f0d78c911d43a5784ceb7bbf52833b0"
+dependencies = [
+ "rayon",
+]
 
 [[package]]
 name = "js-sys"
@@ -2664,6 +2686,7 @@ dependencies = [
  "tauri",
  "tauri-build",
  "tauri-plugin-autostart",
+ "tauri-plugin-clipboard",
  "tauri-plugin-single-instance",
  "tokenizers",
  "window-shadows",
@@ -4810,6 +4833,20 @@ dependencies = [
 ]
 
 [[package]]
+name = "tauri-plugin-clipboard"
+version = "1.1.4"
+source = "git+https://github.com/CrossCopy/tauri-plugin-clipboard#96ccc3beec43946cb4db36bcb2819ae1f5f171d2"
+dependencies = [
+ "base64 0.21.7",
+ "clipboard-rs",
+ "image 0.24.9",
+ "serde",
+ "tauri",
+ "tempfile",
+ "thiserror",
+]
+
+[[package]]
 name = "tauri-plugin-single-instance"
 version = "0.0.0"
 source = "git+https://github.com/tauri-apps/plugins-workspace?branch=v1#dee5649476cee7c8c2e781ff16207246b6944008"
@@ -6097,6 +6134,15 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "6998aa457c9ba8ff2fb9f13e9d2a930dabcea28f1d0ab94d687d8b3654844515"
 dependencies = [
  "windows-targets 0.52.6",
+]
+
+[[package]]
+name = "windows-win"
+version = "3.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "58e23e33622b3b52f948049acbec9bcc34bf6e26d74176b88941f213c75cf2dc"
+dependencies = [
+ "error-code",
 ]
 
 [[package]]

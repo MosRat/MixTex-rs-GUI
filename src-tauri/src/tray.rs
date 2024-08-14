@@ -33,7 +33,7 @@ pub fn tray_event_handler<'a>(app: &'a AppHandle, event: SystemTrayEvent) {
 
 
 
-pub fn update_tray(app_handle: tauri::AppHandle){
+pub fn update_tray(app_handle: &tauri::AppHandle){
     let tray_handle = app_handle.tray_handle();
     tray_handle
         .set_menu(tray_menu_zh_cn())

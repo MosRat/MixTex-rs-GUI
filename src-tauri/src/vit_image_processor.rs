@@ -1,6 +1,6 @@
 use std::path::Path;
 
-use image::{DynamicImage, GenericImageView, ImageReader};
+use image::{load_from_memory, DynamicImage, GenericImageView, ImageReader};
 use image::imageops::FilterType;
 
 
@@ -40,25 +40,18 @@ pub fn rescale_and_normalize(img: DynamicImage) -> DynamicImage {
 
     rescaled_img
 }
-// struct SharedArrayPtr {
-//     ptr: *mut [f32; (3 * CONFIG.width * CONFIG.height) as usize],
-// }
-//
-// unsafe impl Sync for SharedArrayPtr {}
-// unsafe impl Send for SharedArrayPtr {}
-pub fn preprocess(path: impl AsRef<Path>) -> Vec<f32> {
+
+pub fn preprocess(path: impl AsRef<Path>) -> Result<Vec<f32>,String> {
+
     let img = rescale_and_normalize(resize(
         ImageReader::open(path)
-            .unwrap()
+            .map_err(|err| err.to_string())?
             .decode()
-            .unwrap()
+            .map_err(|err| err.to_string())?
     ));
 
-    // let res = std::cell::UnsafeCell::new([0.; (3 * CONFIG.width * CONFIG.height) as usize]);
     let mut res = vec![0.0f32; (3 * CONFIG.width * CONFIG.height) as usize];
-    // let res = Box::new([0.0f32; (3 * CONFIG.width * CONFIG.height) as usize]);
-    // let res_ptr = SharedArrayPtr { ptr: res.as_ptr() as *mut [f32; (3 * CONFIG.width * CONFIG.height) as usize] };
-    // let res_arc = Arc::new(&res_ptr);
+
     let channel_size = (CONFIG.width * CONFIG.height) as usize;
     let _ = img.into_rgb32f().enumerate_pixels().for_each(|(x, y, pixel)| {
         for i in 0..3 {
@@ -67,7 +60,23 @@ pub fn preprocess(path: impl AsRef<Path>) -> Vec<f32> {
         }
     });
 
-    res
-    // Vec::from_p(res)
-    // img.into_rgb32f().into_vec()
+   Ok(res)
+}
+
+pub fn preprocess_from_memory(data: &[u8]) -> Result<Vec<f32>,String> {
+
+    let img = rescale_and_normalize(resize(
+        load_from_memory(data).map_err(|err| err.to_string())?
+    ));
+
+    let mut res = vec![0.0f32; (3 * CONFIG.width * CONFIG.height) as usize];
+
+    let channel_size = (CONFIG.width * CONFIG.height) as usize;
+    let _ = img.into_rgb32f().enumerate_pixels().for_each(|(x, y, pixel)| {
+        for i in 0..3 {
+            let index = i * channel_size + (y * CONFIG.width + x) as usize;
+            res[index] = pixel[i];
+        }
+    });
+    Ok(res)
 }
