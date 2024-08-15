@@ -5,16 +5,15 @@
 use std::path::PathBuf;
 use std::sync::{Arc, Mutex};
 use std::sync::atomic::{AtomicBool, Ordering};
-use log::info;
 use tauri::{GlobalShortcutManager, Manager, State};
 use window_shadows::set_shadow;
-use window_vibrancy::{apply_acrylic,apply_vibrancy};
+use window_vibrancy::{apply_acrylic,apply_vibrancy,};
 use mixtex_rs_gui::onnx::MixTexOnnx;
 use mixtex_rs_gui::vit_image_processor::preprocess;
 
 use tauri::api::notification::Notification;
 use tauri_plugin_log::LogTarget;
-use mixtex_rs_gui::{APP, hotkey::register, ImageWrapper};
+use mixtex_rs_gui::{APP, hotkey::register};
 use mixtex_rs_gui::tray::{tray_event_handler, update_tray};
 use mixtex_rs_gui::screenshot::*;
 use mixtex_rs_gui::window::*;
@@ -100,7 +99,7 @@ fn main() {
             set_shadow(&window, true).unwrap();
 
             #[cfg(target_os = "macos")]
-            apply_vibrancy(&window, NSVisualEffectMaterial::HudWindow, None, None).expect("Unsupported platform! 'apply_vibrancy' is only supported on macOS");
+            apply_vibrancy(&window, window_vibrancy::NSVisualEffectMaterial::HudWindow, None, None).expect("Unsupported platform! 'apply_vibrancy' is only supported on macOS");
 
             #[cfg(target_os = "windows")]
             apply_acrylic(&window, Some((18, 18, 18, 125))).expect("Unsupported platform! 'apply_blur' is only supported on Windows");
