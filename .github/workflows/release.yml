@@ -30,8 +30,6 @@ jobs:
     runs-on: ${{ matrix.platform }}
     steps:
       - uses: actions/checkout@v4
-        with:
-          lfs: true
 
       - name: setup node
         uses: actions/setup-node@v4

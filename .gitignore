@@ -1,6 +1,10 @@
-lib/
+
 dist/
-models/
+*.a
+*.lib
+*.onnx
+models/tokenizer/tokenizer.json
+
 # Logs
 logs
 *.log
