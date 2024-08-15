@@ -7,6 +7,8 @@ use tauri::Window;
 use tauri::WindowBuilder;
 use window_shadows::set_shadow;
 use crate::APP;
+use log::info;
+use window_vibrancy::apply_acrylic;
 
 // Get daemon window instance
 fn get_daemon_window() -> Window {
@@ -14,7 +16,7 @@ fn get_daemon_window() -> Window {
     match app_handle.get_window("daemon") {
         Some(v) => v,
         None => {
-            eprintln!("Daemon window not found, create new daemon window!");
+            info!("Daemon window not found, create new daemon window!");
             WindowBuilder::new(
                 app_handle,
                 "daemon",
@@ -31,7 +33,7 @@ fn get_daemon_window() -> Window {
 
 // Get monitor where the mouse is currently located
 fn get_current_monitor(x: i32, y: i32) -> Monitor {
-    eprintln!("Mouse position: {}, {}", x, y);
+    info!("Mouse position: {}, {}", x, y);
     let daemon_window = get_daemon_window();
     let monitors = daemon_window.available_monitors().unwrap();
 
@@ -44,22 +46,22 @@ fn get_current_monitor(x: i32, y: i32) -> Monitor {
             && y >= position.y
             && y <= (position.y + size.height as i32)
         {
-            eprintln!("Current Monitor: {:?}", m);
+            info!("Current Monitor: {:?}", m);
             return m;
         }
     }
-    eprintln!("Current Monitor not found, using primary monitor");
+    info!("Current Monitor not found, using primary monitor");
     daemon_window.primary_monitor().unwrap().unwrap()
 }
 
 // Creating a window on the mouse monitor
-fn build_window(label: &str, title: &str) -> (Window, bool) {
+pub fn build_window(label: &str, title: &str) -> (Window, bool) {
     use mouse_position::mouse_position::{Mouse, Position};
 
     let mouse_position = match Mouse::get_mouse_position() {
         Mouse::Position { x, y } => Position { x, y },
         Mouse::Error => {
-            eprintln!("Mouse position not found, using (0, 0) as default");
+            info!("Mouse position not found, using (0, 0) as default");
             Position { x: 0, y: 0 }
         }
     };
@@ -69,22 +71,25 @@ fn build_window(label: &str, title: &str) -> (Window, bool) {
     let app_handle = APP.get().unwrap();
     match app_handle.get_window(label) {
         Some(v) => {
-            eprintln!("Window existence: {}", label);
+            info!("Window existence: {}", label);
+            if v.is_minimized().unwrap() {
+                v.unminimize().unwrap();
+            }
             v.set_focus().unwrap();
             (v, true)
         }
         None => {
-            eprintln!("Window not existence, Creating new window: {}", label);
+            info!("Window not existence, Creating new window: {}", label);
             let mut builder = tauri::WindowBuilder::new(
                 app_handle,
                 label,
                 tauri::WindowUrl::App("index.html".into()),
             )
                 .position(position.x.into(), position.y.into())
-                .additional_browser_args("--disable-web-security")
+                // .additional_browser_args("--disable-web-security")
                 .focused(true)
-                .title(title)
-                .visible(false);
+                .title(title);
+                // .visible(false);
 
             #[cfg(target_os = "macos")]
             {
@@ -101,17 +106,21 @@ fn build_window(label: &str, title: &str) -> (Window, bool) {
             if label != "screenshot" {
                 #[cfg(not(target_os = "linux"))]
                 set_shadow(&window, true).unwrap_or_default();
+                #[cfg(target_os = "windows")]
+                apply_acrylic(&window, Some((18, 18, 18, 125))).expect("Unsupported platform! 'apply_blur' is only supported on Windows");
             }
             let _ = window.current_monitor();
+            // info!("Create windows {:?}",window);
             (window, false)
         }
     }
 }
 
-fn screenshot_window() -> Window {
+pub fn screenshot_window() -> Window {
     let (window, _exists) = build_window("screenshot", "Screenshot");
 
     window.set_skip_taskbar(true).unwrap();
+    window.set_decorations(false).unwrap();
     
     #[cfg(target_os = "macos")]
     {
@@ -127,3 +136,11 @@ fn screenshot_window() -> Window {
     window.set_always_on_top(true).unwrap();
     window
 }
+
+// pub fn ocr_recognize() {
+//     let window = screenshot_window();
+//     // let img =  APP.get().unwrap().state()
+//     window.once("success_save", move |event| {
+//         // recognize_window();
+//     });
+// }

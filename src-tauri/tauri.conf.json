@@ -12,15 +12,32 @@
   "tauri": {
     "allowlist": {
       "all": true,
+      "globalShortcut": {
+        "all": true
+      },
       "shell": {
         "all": false,
         "open": true
       },
       "app": {
         "all": true
+      },
+       "protocol":
+       {
+          "asset": true,
+          "assetScope": [
+              "$CACHE/**",
+              "$CONFIG/**"
+          ]
       }
     },
     "windows": [
+      {
+        "title": "Daemon",
+        "label": "daemon",
+        "visible": false,
+        "url": "daemon.html"
+      },
       {
         "title": "mixtex-rs-gui",
         "label": "main",
@@ -28,16 +45,20 @@
         "decorations": false,
         "alwaysOnTop": false,
         "width": 800,
-        "height": 600
+        "height": 600,
+        "url": "index.html"
       }
     ],
     "security": {
-      "csp": null
+      "csp": "default-src * data: ; img-src * 'self' asset: https: data: ; style-src * 'unsafe-inline'; worker-src 'self' blob: ; script-src * 'unsafe-eval';",
+      "devCsp": "default-src * data: ; img-src * 'self' asset: https: data: ; style-src * 'unsafe-inline'; worker-src 'self' blob: ; script-src * 'unsafe-eval';"
     },
     "bundle": {
       "active": true,
       "targets": "all",
-      "identifier": "com.mosrat.mixtex",
+      "identifier": "com.mosrat.mixtex-rs-gui",
+      "longDescription": "Latex and ocr software powered by MixTex-rs and Tauri",
+      "shortDescription": "MixTex-rs GUI App",
       "icon": [
         "icons/32x32.png",
         "icons/128x128.png",

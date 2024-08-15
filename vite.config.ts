@@ -5,6 +5,14 @@ import { resolve } from 'path';
 // https://vitejs.dev/config/
 export default defineConfig(async () => ({
   plugins: [vue()],
+  resolve: {
+    alias: {
+      '@': resolve(__dirname, "./src"),
+      '@cp': resolve(__dirname, "./src/components"),
+      '@view': resolve(__dirname, "./src/views"),
+      '@lib': resolve(__dirname, "./src/libs"),
+    }
+  },
 
   // Vite options tailored for Tauri development and only applied in `tauri dev` or `tauri build`
   //

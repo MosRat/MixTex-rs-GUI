@@ -1,4 +1,6 @@
 #![allow(non_snake_case)]
+
+use std::sync::Mutex;
 use once_cell::sync::OnceCell;
 
 pub mod vit_image_processor;
@@ -14,10 +16,13 @@ pub mod window;
 pub mod tray;
 
 pub static APP: OnceCell<tauri::AppHandle> = OnceCell::new();
+// Text to be translated
+pub struct ImageWrapper(pub Mutex<Vec<u8>>);
 
 const ENCODER_BYTES: &[u8] = include_bytes!(r"C:\Users\whl\WorkSpace\RustProjects\MixTex-rs\onnx\encoder_model.onnx");
 const DECODER_BYTES: &[u8] = include_bytes!(r"C:\Users\whl\WorkSpace\RustProjects\MixTex-rs\onnx\decoder_model_merged.onnx");
 const TOKENIZER_STR: &str = include_str!(r"C:\Users\whl\WorkSpace\RustProjects\MixTex-rs\onnx\tokenizer\tokenizer.json");
+// const TOKENIZER_STR: &str = "";
 
 
 pub fn check_repeat(tokens: &[u32]) -> bool {

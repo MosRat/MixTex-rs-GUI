@@ -1,23 +1,42 @@
 <script setup lang="ts">
 import {nextTick, ref, watch} from 'vue'
-import {invoke} from "@tauri-apps/api/tauri";
+import {convertFileSrc, invoke} from "@tauri-apps/api/tauri";
 import { open } from '@tauri-apps/api/dialog';
 import {appWindow} from "@tauri-apps/api/window";
 import renderMathInElement from 'katex/dist/contrib/auto-render.mjs';
+import TitleBar from "@cp/TitleBar.vue";
+import {listen} from "@tauri-apps/api/event";
+import {appCacheDir, join} from "@tauri-apps/api/path";
 
-
-const decode_text = ref('')
-const text = ref('')
+const decodeText = ref('')
+const imgPath = ref('')
 const running = ref(false)
 // const dropZoneBorderColor = ref("")
 const textareaRef = ref<HTMLTextAreaElement | null>(null);
 const katexRef = ref<HTMLDivElement | null>(null);
+const imgSrc = ref('');
 
 // 处理文件拖放
 appWindow.onFileDropEvent(event => {
   if (event.payload.type === "drop") {
-    text.value = event.payload.paths[0]
+    imgPath.value = event.payload.paths[0]
+    imgSrc.value = convertFileSrc(event.payload.paths[0]);
   }
+})
+
+// 监听截图图片
+listen("img_arrive",async () => {
+  console.log("img_arrive!")
+  const appCacheDirPath = await appCacheDir();
+  const filePath = await join(appCacheDirPath, 'mixtex_screenshot.png');
+  imgPath.value = filePath;
+  imgSrc.value = "";
+  imgSrc.value = convertFileSrc(filePath) + `?t=${Math.random()}`;
+  if (await appWindow.isMinimized()){
+    await appWindow.unminimize()
+  }
+  await appWindow.setFocus()
+
 })
 
 
@@ -32,11 +51,10 @@ const scrollToBottom = () => {
   }
 };
 
-watch(decode_text, () => {
+watch(decodeText, () => {
   nextTick(() => {
     renderMathInElement(katexRef.value, {});
     scrollToBottom()
-
   });
 }, {immediate: true});
 
@@ -58,7 +76,8 @@ const handleFileSelect = async () => {
   } else if (selected === null) {
     // user cancelled the selection
   } else {
-    text.value = selected;
+    imgPath.value = selected;
+    imgSrc.value = convertFileSrc(selected);
     console.log(selected);
   }
 }
@@ -66,9 +85,9 @@ const handleFileSelect = async () => {
 const handleInfer = async () => {
   running.value = true;
   let handle = await appWindow.listen("result", payload => {
-    decode_text.value += (payload.payload as Payload).token;
+    decodeText.value += (payload.payload as Payload).token;
   })
-  await invoke('inference', {path: text.value})
+  await invoke('inference', {path: imgPath.value})
   handle()
   running.value = false
 }
@@ -80,65 +99,39 @@ const handleStop = async () => {
 }
 
 const handleClear = async () => {
-  decode_text.value = ""
+  decodeText.value = ""
 }
 
-
-
-// const handleDragOver = (event: any) => {
-//   // 阻止默认的拖放行为
-//   event.preventDefault()
-//   dropZoneBorderColor.value = '#2da74e'
-// }
-//
-// const handleDragLeave = (event: any) => {
-//   // 阻止默认的拖放行为
-//   event.preventDefault()
-//   dropZoneBorderColor.value = '#d9dbde'
-// }
-//
-// const handleDrop = async (event: any) => {
-//   event.preventDefault()
-//   dropZoneBorderColor.value = '#d9dbde'
-//
-//   const item = event.dataTransfer.items[0]
-//   // DataTransferItem 对象提供了webkitGetAsEntry()方法，用于获取文件数据项的文件系统入口对象
-//   // 该方法会返回两种格式对象：FileEntry（文件）、DirectoryEntry（文件夹）
-//   const entry = item.webkitGetAsEntry()
-//   // 使用isFile字段判断是否是文件,因为是第一层文件则没有文件夹，需要设置属性isFirstFile为true方便后面拼接路径使用
-//   if (entry.isFile && entry.name) {
-//     text.value = entry.fullPath
-//   }
-//
-// }
 
 
 </script>
 
 <template>
+  <TitleBar/>
   <div class="container">
     <div class="v-container">
       <div class="output">
-        <textarea ref="textareaRef" class="text-content" :value="decode_text" readonly style="resize: none;"></textarea>
+        <textarea
+            ref="textareaRef"
+            class="text-content"
+            v-model="decodeText"
+            :readonly="running"
+            style="resize: none;">
+        </textarea>
         <div ref="katexRef" class="latex">
-          {{ decode_text }}
+          {{ decodeText }}
         </div>
       </div>
       <div class="h-container">
         <input
           class="input-content"
           type="text"
-          v-model="text"
+          v-model="imgPath"
+          readonly
       >
-        <div class="r-button" @click="handleFileSelect">Select</div>
+        <img class="preview-image" :src="imgSrc" v-if="imgPath.length>0" cache-control="no-cache">
+        <div class="r-button" id="select-button" @click="handleFileSelect">Select</div>
       </div>
-<!--      <div class="drag-file"-->
-<!--          :style="`border-color:${dropZoneBorderColor}`"-->
-<!--           @dragover="handleDragOver"-->
-<!--           @dragleave="handleDragLeave"-->
-<!--           @drop="handleDrop">-->
-<!--        <p>拖动文件至此</p>-->
-<!--      </div>-->
     </div>
     <div>
       <button @click="handleInfer" v-if="!running" class="button" id="run-button">Decode</button>
@@ -171,7 +164,7 @@ input, button, textarea, .latex,.drag-file,.r-button{
   font-size: 1em;
   font-weight: 500;
   font-family: inherit;
-  color: #0f0f0f;
+  color: inherit;
   background-color: rgba(255, 255, 255, 0.21);
   transition: border-color 0.25s;
   box-shadow: 0 1px 1px rgba(0, 0, 0, 0.2);
@@ -181,8 +174,9 @@ input, button, textarea, .latex,.drag-file,.r-button{
   background-color: rgba(37, 37, 37, 0.47);
   font-weight: bolder;
   width: 10vw;
-  padding-block: 0.25em;
+  padding-block: 0.75em;
   box-sizing: border-box;
+  text-align: center;
 }
 
 textarea {
@@ -203,9 +197,12 @@ button:hover {
 
 .container {
   display: flex;
+  flex-direction: column;
   justify-content: center;
   align-items: center;
   max-height: 95vh;
+  margin: 7.5vh 0 0;
+
 }
 
 .v-container {
@@ -242,13 +239,18 @@ button:hover {
 }
 
 .input-content {
+  font-size: 0.75em;
   min-height: 2em;
   width: 75vw;
+  padding-left: 1em;
 }
 
 .drag-file{
   min-height: 10vh;
   border: 2px solid rgba(37, 37, 37, 0.47);
+}
+.preview-image{
+  max-width: 10vw;
 }
 
 .button {
@@ -256,6 +258,11 @@ button:hover {
   margin-inline: 1em;
   min-width: 20vw;
   min-height: 2em;
+}
+
+#select-button:hover{
+  filter: drop-shadow(0 0 1em #b96f04);
+
 }
 
 #run-button:hover {

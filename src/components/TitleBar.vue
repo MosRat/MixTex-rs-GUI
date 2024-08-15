@@ -4,6 +4,10 @@ import { appWindow } from '@tauri-apps/api/window'
 
 <template>
 <div data-tauri-drag-region class="titlebar">
+  <div data-tauri-drag-region class="title">
+    <img class="icon" src="/mixtex.png">
+    MixTex-rs-gui
+  </div>
   <div class="titlebar-button" id="titlebar-minimize" @click="appWindow.minimize">
     <img
       src="/mdi_window-minimize.svg"
@@ -17,13 +21,24 @@ import { appWindow } from '@tauri-apps/api/window'
     />
   </div>
   <div class="titlebar-button" id="titlebar-close">
-    <img src="/mdi_close.svg" alt="close" @click="appWindow.close" />
+    <img src="/mdi_close.svg" alt="close" @click="appWindow.minimize" />
   </div>
 </div>
 
 </template>
 
 <style scoped>
+.title{
+  flex-grow: 1;
+  display: flex;
+  align-items: center; /* 垂直居中对齐 */
+  font-size: small;
+}
+.icon{
+  width: 36px;
+  margin-inline: 1.25vw;
+}
+
 .titlebar {
   height: 5vh;
   background: transparent;
@@ -48,6 +63,7 @@ import { appWindow } from '@tauri-apps/api/window'
 .titlebar-button:hover {
   background: rgba(91, 91, 91, 0.5);
 }
+
 #titlebar-close:hover {
   background: rgba(255, 12, 12, 0.5);
 }

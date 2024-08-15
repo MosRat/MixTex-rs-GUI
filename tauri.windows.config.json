@@ -1,0 +1,26 @@
+{
+  "tauri": {
+    "systemTray": {
+      "iconPath": "icons/icon.ico",
+      "iconAsTemplate": true
+    },
+    "bundle": {
+      "windows": {
+        "certificateThumbprint": null,
+        "digestAlgorithm": "sha256",
+        "timestampUrl": "",
+        "webviewInstallMode": {
+          "silent": true,
+          "type": "embedBootstrapper"
+        },
+        "nsis": {
+          "displayLanguageSelector": true,
+          "installerIcon": "icons/icon.ico",
+          "license": "../LICENSE",
+          "installMode": "perMachine",
+          "languages": ["SimpChinese", "TradChinese", "English"]
+        }
+      }
+    }
+  }
+}

@@ -5,6 +5,7 @@
 use std::path::PathBuf;
 use std::sync::{Arc, Mutex};
 use std::sync::atomic::{AtomicBool, Ordering};
+use log::info;
 use tauri::{GlobalShortcutManager, Manager, State};
 use window_shadows::set_shadow;
 use window_vibrancy::{apply_acrylic,apply_vibrancy};
@@ -12,11 +13,11 @@ use mixtex_rs_gui::onnx::MixTexOnnx;
 use mixtex_rs_gui::vit_image_processor::preprocess;
 
 use tauri::api::notification::Notification;
-use mixtex_rs_gui::{
-    APP,
-    hotkey::register
-};
+use tauri_plugin_log::LogTarget;
+use mixtex_rs_gui::{APP, hotkey::register, ImageWrapper};
 use mixtex_rs_gui::tray::{tray_event_handler, update_tray};
+use mixtex_rs_gui::screenshot::*;
+use mixtex_rs_gui::window::*;
 
 struct Model{
     model:Mutex<MixTexOnnx>,
@@ -57,8 +58,8 @@ async fn inference(path: String,model:State<'_,Model>,window: tauri::Window) -> 
 
 
 
-fn main() {
 
+fn main() {
     tauri::Builder::default()
         .plugin(tauri_plugin_single_instance::init(|app, _, cwd| {
             Notification::new(&app.config().tauri.bundle.identifier)
@@ -69,6 +70,11 @@ fn main() {
                 .unwrap();
         }))
         .plugin(tauri_plugin_clipboard::init())
+        .plugin(
+            tauri_plugin_log::Builder::default()
+                .targets([LogTarget::LogDir, LogTarget::Stdout])
+                .build(),
+        )
         .system_tray(tauri::SystemTray::new())
         .setup(|app|{
 
@@ -77,6 +83,16 @@ fn main() {
 
             // global app handle
             APP.get_or_init(|| app.handle());
+
+            app.global_shortcut_manager().register("Ctrl+Alt+F12",|| {
+                screenshot_window();
+                // Notification::new(APP.get().unwrap().config().tauri.bundle.identifier.clone())
+                //     .title("Failed to register global shortcut")
+                //     .body("Key receive!")
+                //     .icon("MixTex")
+                //     .show()
+                //     .unwrap()
+            }).unwrap();
 
             // set window effect
             let window = app.get_window("main").unwrap();
@@ -93,14 +109,17 @@ fn main() {
             tauri::async_runtime::spawn(async move {
                 let app_handle = APP.get().unwrap();
                 app_handle.manage(Model{model:Mutex::new(MixTexOnnx::build().expect("Fail load model!"))});
+                // app_handle.manage(ImageWrapper(Mutex::new(Vec::new())));
 
                 // register global shortcut
-                match  register(app_handle,"call",||{},"CommandOrControl+Shift+X"){
+                match  register(app_handle,"call",||{
+                    screenshot_window();
+                },"Shift+X"){
                     Ok(()) => {}
                     Err(e) => Notification::new(app_handle.config().tauri.bundle.identifier.clone())
-                        .title("Failed to register global shortcut")
+                        .title("MixTex fail set short cut")
                         .body(&e)
-                        .icon("MixTex")
+                        .icon("mixtex-rs-gui")
                         .show()
                         .unwrap(),
                 }
@@ -113,15 +132,15 @@ fn main() {
             Ok(())
         }
         )
-        .invoke_handler(tauri::generate_handler![greet,inference])
+        .invoke_handler(tauri::generate_handler![greet,inference,screenshot])
         .on_system_tray_event(tray_event_handler)
         .build(tauri::generate_context!())
         .expect("error while running tauri application")
         // 保活
         .run(|_app_handle, event| {
-            _app_handle.global_shortcut_manager().unregister_all().unwrap();
-            // if let tauri::RunEvent::ExitRequested { api, .. } = event {
-            //     api.prevent_exit();
-            // }
+            // _app_handle.global_shortcut_manager().unregister_all().unwrap();
+            if let tauri::RunEvent::ExitRequested { api, .. } = event {
+                api.prevent_exit();
+            }
         });
 }

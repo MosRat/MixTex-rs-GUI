@@ -18,7 +18,26 @@
     "strict": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
-    "noFallthroughCasesInSwitch": true
+    "noFallthroughCasesInSwitch": true,
+
+    /* Path Alias */
+    "paths": {
+      "@/*": [
+        "./src/*"
+      ],
+      // 这里需要配置
+      "@cp/*": [
+        "./src/components/*"
+      ],
+      // 这里需要配置
+      "@view/*": [
+        "./src/views/*"
+      ],
+      // 这里需要配置
+      "@lib/*": [
+        "./src/libs/*"
+      ]
+    }
   },
   "include": [
     "src/**/*.ts",

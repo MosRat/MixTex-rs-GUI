@@ -2,15 +2,18 @@
 // This starter template is using Vue 3 <script setup> SFCs
 // Check out https://vuejs.org/api/sfc-script-setup.html#script-setup
 // import Greet from "./components/Greet.vue";
-import MixTex from "./components/MixTex.vue";
-import TitleBar from "./components/TitleBar.vue";
+import {appWindow} from "@tauri-apps/api/window";
+import router from "@/router";
+
+console.log(appWindow.label)
+
+router.replace({path:`/${appWindow.label}`});
+
+
 </script>
 
 <template>
-  <TitleBar/>
-  <div class="container">
-    <MixTex />
-  </div>
+  <router-view/>
 </template>
 
 <style scoped>
@@ -22,21 +25,6 @@ import TitleBar from "./components/TitleBar.vue";
   filter: drop-shadow(0 0 2em #249b73);
 }
 
-:root {
-  font-family: Inter, Avenir, Helvetica, Arial, sans-serif;
-  font-size: 16px;
-  line-height: 24px;
-  font-weight: 400;
-
-  color: #0f0f0f;
-  background: #FF0000;
-
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  -webkit-text-size-adjust: 100%;
-}
 
 .container {
   margin: 0;
