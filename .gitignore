@@ -1,5 +1,6 @@
 lib/
 dist/
+models/
 # Logs
 logs
 *.log
