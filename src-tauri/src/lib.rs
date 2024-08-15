@@ -19,9 +19,9 @@ pub static APP: OnceCell<tauri::AppHandle> = OnceCell::new();
 // Text to be translated
 pub struct ImageWrapper(pub Mutex<Vec<u8>>);
 
-const ENCODER_BYTES: &[u8] = include_bytes!(r"..\..\models\encoder_model.onnx");
-const DECODER_BYTES: &[u8] = include_bytes!(r"..\..\models\decoder_model_merged.onnx");
-const TOKENIZER_STR: &str = include_str!(r"..\..\models\tokenizer\tokenizer.json");
+const ENCODER_BYTES: &[u8] = include_bytes!(concat!(env!("CARGO_MANIFEST_DIR"), "/models/encoder_model.onnx"));
+const DECODER_BYTES: &[u8] = include_bytes!(concat!(env!("CARGO_MANIFEST_DIR"), "/models/decoder_model_merged.onnx"));
+const TOKENIZER_STR: &str = include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/models/tokenizer/tokenizer.json"));
 // const TOKENIZER_STR: &str = "";
 
 
