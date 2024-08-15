@@ -31,6 +31,48 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Download and extract lib dependencies (Windows)
+        if: matrix.platform == 'windows-latest'
+        shell: pwsh
+        run: |
+          New-Item -Path "lib\${{ matrix.libs }}" -ItemType Directory -Force
+          Invoke-WebRequest -Uri "https://github.com/MosRat/MixTex-rs-GUI/releases/download/deps/${{ matrix.libs }}.zip" -OutFile "${{ matrix.libs }}.zip"
+          Expand-Archive -Path "${{ matrix.libs }}.zip" -DestinationPath "lib\${{ matrix.libs }}" -Force
+          Remove-Item "${{ matrix.libs }}.zip"
+
+      - name: Download and extract lib dependencies (macOS/Linux)
+        if: matrix.platform != 'windows-latest'
+        shell: bash
+        run: |
+          mkdir -p lib/${{ matrix.libs }}
+          curl -L "https://github.com/MosRat/MixTex-rs-GUI/releases/download/deps/${{ matrix.libs }}.zip" -o ${{ matrix.libs }}.zip
+          unzip -q ${{ matrix.libs }}.zip -d lib/${{ matrix.libs }}
+          rm ${{ matrix.libs }}.zip
+
+      - name: Download and extract models (Windows)
+        if: matrix.platform == 'windows-latest'
+        shell: pwsh
+        run: |
+          Invoke-WebRequest -Uri "https://github.com/MosRat/MixTex-rs-GUI/releases/download/deps/models.zip" -OutFile "models.zip"
+          Expand-Archive -Path "models.zip" -DestinationPath "models" -Force
+          Remove-Item "models.zip"
+
+      - name: Download and extract models (macOS/Linux)
+        if: matrix.platform != 'windows-latest'
+        shell: bash
+        run: |
+          curl -L "https://github.com/MosRat/MixTex-rs-GUI/releases/download/deps/models.zip" -o models.zip
+          unzip -q models.zip -d models
+          rm models.zip
+
+      - name: List files (for verification)
+        shell: bash
+        run: |
+          echo "Library files:"
+          ls -R lib
+          echo "Model files:"
+          ls -R models
+
       - name: setup node
         uses: actions/setup-node@v4
         with:
