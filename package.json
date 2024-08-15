@@ -15,7 +15,7 @@
     "katex": "^0.16.11",
     "vue": "^3.3.4",
     "vue-router": "4",
-    "tauri-plugin-log-api": "github:tauri-apps/tauri-plugin-log#v1"
+    "tauri-plugin-log-api": "https://github.com/tauri-apps/tauri-plugin-log#v1"
   },
   "devDependencies": {
     "@tauri-apps/cli": "^1",
