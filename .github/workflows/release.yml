@@ -35,18 +35,18 @@ jobs:
         if: matrix.platform == 'windows-latest'
         shell: pwsh
         run: |
-          New-Item -Path "lib\${{ matrix.libs }}" -ItemType Directory -Force
+          New-Item -Path "lib" -ItemType Directory -Force
           Invoke-WebRequest -Uri "https://github.com/MosRat/MixTex-rs-GUI/releases/download/deps/${{ matrix.libs }}.zip" -OutFile "${{ matrix.libs }}.zip"
-          Expand-Archive -Path "${{ matrix.libs }}.zip" -DestinationPath "lib\${{ matrix.libs }}" -Force
+          Expand-Archive -Path "${{ matrix.libs }}.zip" -DestinationPath "lib" -Force
           Remove-Item "${{ matrix.libs }}.zip"
 
       - name: Download and extract lib dependencies (macOS/Linux)
         if: matrix.platform != 'windows-latest'
         shell: bash
         run: |
-          mkdir -p lib/${{ matrix.libs }}
+          mkdir -p lib
           curl -L "https://github.com/MosRat/MixTex-rs-GUI/releases/download/deps/${{ matrix.libs }}.zip" -o ${{ matrix.libs }}.zip
-          unzip -q ${{ matrix.libs }}.zip -d lib/${{ matrix.libs }}
+          unzip -q ${{ matrix.libs }}.zip -d lib
           rm ${{ matrix.libs }}.zip
 
       - name: Download and extract models (Windows)
@@ -54,7 +54,7 @@ jobs:
         shell: pwsh
         run: |
           Invoke-WebRequest -Uri "https://github.com/MosRat/MixTex-rs-GUI/releases/download/deps/models.zip" -OutFile "models.zip"
-          Expand-Archive -Path "models.zip" -DestinationPath "models" -Force
+          Expand-Archive -Path "models.zip" -DestinationPath "." -Force
           Remove-Item "models.zip"
 
       - name: Download and extract models (macOS/Linux)
@@ -62,7 +62,7 @@ jobs:
         shell: bash
         run: |
           curl -L "https://github.com/MosRat/MixTex-rs-GUI/releases/download/deps/models.zip" -o models.zip
-          unzip -q models.zip -d models
+          unzip -q models.zip 
           rm models.zip
 
       - name: List files (for verification)
