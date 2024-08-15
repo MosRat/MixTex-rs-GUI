@@ -216,9 +216,6 @@ button:hover {
   max-width: 85vw;
 }
 
-
-
-
 .output {
   display: flex;
   flex-direction: row;
@@ -236,6 +233,8 @@ button:hover {
   overflow: scroll;
   padding: 6px;
   text-align: left;
+  font-size: 0.8em;
+  font-family: "Times New Roman", Times, serif;
 }
 
 .input-content {

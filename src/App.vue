@@ -5,7 +5,9 @@
 import {appWindow} from "@tauri-apps/api/window";
 import router from "@/router";
 
-console.log(appWindow.label)
+document.addEventListener('contextmenu', function(e) {
+    e.preventDefault();
+});
 
 router.replace({path:`/${appWindow.label}`});
 
