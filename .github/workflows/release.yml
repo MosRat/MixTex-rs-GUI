@@ -16,16 +16,16 @@ jobs:
         include:
           - platform: 'macos-latest' # for Arm based macs (M1 and above).
             args: '--target aarch64-apple-darwin'
-            libs: 'lib/arm64-mac'
+            libs: 'arm64-mac'
           - platform: 'macos-latest' # for Intel based macs.
             args: '--target x86_64-apple-darwin'
-            libs: 'lib/x86-64-mac'
+            libs: 'x86-64-mac'
           - platform: 'ubuntu-20.04' # for Tauri v1 you could replace this with ubuntu-20.04.
             args: ''
-            libs: 'lib/x86-64-linux'
+            libs: 'x86-64-linux'
           - platform: 'windows-latest'
             args: ''
-            libs: 'lib/x86-64-windows-msvc'
+            libs: 'x86-64-windows-msvc'
 
     runs-on: ${{ matrix.platform }}
     steps:
@@ -107,7 +107,7 @@ jobs:
       - uses: tauri-apps/tauri-action@v0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          ORT_LIB_LOCATION: ${{ github.workspace }}/${{ matrix.libs }}
+          ORT_LIB_LOCATION: ${{ github.workspace }}/lib/${{ matrix.libs }}
 
         with:
           tagName: app-v__VERSION__-${{ steps.timestamp.outputs.TIMESTAMP }} # the action automatically replaces \_\_VERSION\_\_ with the app version.
