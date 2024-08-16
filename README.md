@@ -1,6 +1,6 @@
 # MixTex-rs GUI
 
-A GUI implement of [MixTex](https://github.com/RQLuo/MixTeX-Latex-OCR/tree/MixTeX-v1.1.2), use [Rust](https://www.rust-lang.org/) + [Vue](https://github.com/vuejs/) + [Tauri]([https://github.com/tauri-apps/tauri] )
+A GUI implement of [MixTex](https://github.com/RQLuo/MixTeX-Latex-OCR/tree/MixTeX-v1.1.2), use [Rust](https://www.rust-lang.org/) + [Vue](https://github.com/vuejs/) + [Tauri](https://github.com/tauri-apps/tauri)
 
 
 ##  Setup and Usage
