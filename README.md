@@ -10,11 +10,11 @@ A GUI implement of [MixTex](https://github.com/RQLuo/MixTeX-Latex-OCR/tree/MixTe
 - Or drag png/jp(e)g image into app
 - Or click `Select` to choose one from filesystem.
 
-- ![result_3dview2.gif](docs%2Fgif%2Fresult_3dview2.gif)
+![result_3dview2.gif](docs%2Fgif%2Fresult_3dview2.gif)
 
 ## Exit
 Default behavior of click close button is minimize.The shortcut call will restore it.To close it, find it in taskbar and right click.
-z
+
 ## Platform
 
 **No tests on Linux and Mac yet**, I only have Windows.Release of other system is created by github actions.
