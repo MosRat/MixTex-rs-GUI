@@ -14,7 +14,7 @@ A GUI implement of [MixTex](https://github.com/RQLuo/MixTeX-Latex-OCR/tree/MixTe
 
 ## Exit
 Default behavior of click close button is minimize.The shortcut call will restore it.To close it, find it in taskbar and right click.
-
+![img.png](docs/img/img.png)
 ## Platform
 
 **No tests on Linux and Mac yet**, I only have Windows.Release of other system is created by github actions.
