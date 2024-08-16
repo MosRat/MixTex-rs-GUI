@@ -52,7 +52,6 @@ async fn inference(path: String,model:State<'_,Model>,window: tauri::Window) -> 
         Ok(res)
     }
 
-    // format!("Hello, {}! You've been greeted from Rust!", name)
 }
 
 
@@ -85,12 +84,6 @@ fn main() {
 
             app.global_shortcut_manager().register("Ctrl+Alt+F12",|| {
                 screenshot_window();
-                // Notification::new(APP.get().unwrap().config().tauri.bundle.identifier.clone())
-                //     .title("Failed to register global shortcut")
-                //     .body("Key receive!")
-                //     .icon("MixTex")
-                //     .show()
-                //     .unwrap()
             }).unwrap();
 
             // set window effect

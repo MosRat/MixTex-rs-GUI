@@ -1,16 +1,21 @@
-# Tauri + Vue + TypeScript
+# MixTex-rs GUI
 
-This template should help get you started developing with Vue 3 and TypeScript in Vite. The template uses Vue 3 `<script setup>` SFCs, check out the [script setup docs](https://v3.vuejs.org/api/sfc-script-setup.html#sfc-script-setup) to learn more.
+A GUI implement of [MixTex](https://github.com/RQLuo/MixTeX-Latex-OCR/tree/MixTeX-v1.1.2), use [Rust](https://www.rust-lang.org/) + [Vue](https://github.com/vuejs/) + [Tauri]([https://github.com/tauri-apps/tauri] )
 
-## Recommended IDE Setup
 
-- [VS Code](https://code.visualstudio.com/) + [Volar](https://marketplace.visualstudio.com/items?itemName=Vue.volar) + [Tauri](https://marketplace.visualstudio.com/items?itemName=tauri-apps.tauri-vscode) + [rust-analyzer](https://marketplace.visualstudio.com/items?itemName=rust-lang.rust-analyzer)
+##  Setup and Usage
 
-## Type Support For `.vue` Imports in TS
+- Download installer for your system from [Release](https://github.com/MosRat/MixTex-rs-GUI/releases/latest), or single exe (Windows only)
+- Use `Shift + X` or `Ctrl + Alt + F12` to screenshot latex. (can be changed in future version)
+- Or drag png/jp(e)g image into app
+- Or click `Select` to choose one from filesystem.
 
-Since TypeScript cannot handle type information for `.vue` imports, they are shimmed to be a generic Vue component type by default. In most cases this is fine if you don't really care about component prop types outside of templates. However, if you wish to get actual prop types in `.vue` imports (for example to get props validation when using manual `h(...)` calls), you can enable Volar's Take Over mode by following these steps:
+- ![result_3dview2.gif](docs%2Fgif%2Fresult_3dview2.gif)
 
-1. Run `Extensions: Show Built-in Extensions` from VS Code's command palette, look for `TypeScript and JavaScript Language Features`, then right click and select `Disable (Workspace)`. By default, Take Over mode will enable itself if the default TypeScript extension is disabled.
-2. Reload the VS Code window by running `Developer: Reload Window` from the command palette.
+## Exit
+Default behavior of click close button is minimize.The shortcut call will restore it.To close it, find it in taskbar and right click.
+z
+## Platform
 
-You can learn more about Take Over mode [here](https://github.com/johnsoncodehk/volar/discussions/471).
+**No tests on Linux and Mac yet**, I only have Windows.Release of other system is created by github actions.
+
