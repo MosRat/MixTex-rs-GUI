@@ -17,5 +17,7 @@ Default behavior of click close button is minimize.The shortcut call will restor
 ![img.png](docs/img/img.png)
 ## Platform
 
-**No tests on Linux and Mac yet**, I only have Windows.Release of other system is created by github actions.
+**No tests on Linux and Mac yet**
+
+I only have Windows PC. Release of other systems is auto created by github actions.
 
