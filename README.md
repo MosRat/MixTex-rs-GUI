@@ -21,3 +21,12 @@ Default behavior of click close button is minimize.The shortcut call will restor
 
 I only have Windows PC. Release of other systems is auto created by github actions.
 
+## Develop
+
+- Download model and lib from [Deps](https://github.com/MosRat/MixTex-rs-GUI/releases/tag/deps)
+- ``` git clone ``` this repo and copy model to {repo}/models, lib to {repo}/lib.
+- Prepare rust, node and tauri.
+- set env ``` ORT_LIB_LOCATION=path/to/your/lib/folder  ```
+- ```pnpm i ```
+- ``` cargo tuari dev --release ``` (libs are built in release mode, debug build will lead to linker error on Windows msvc)
+
