@@ -100,9 +100,9 @@ pub fn build_window(label: &str, title: &str) -> (Window, bool) {
             #[cfg(not(target_os = "macos"))]
             {
                 builder = builder.transparent(true).decorations(false);
-            }
-            if label != "screenshot"{
-                builder = builder.transparent(false);
+                if label != "screenshot"{
+                    builder = builder.transparent(true)
+                }
             }
 
             let window = builder.build().unwrap();
