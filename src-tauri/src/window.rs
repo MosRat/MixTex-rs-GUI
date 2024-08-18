@@ -101,13 +101,17 @@ pub fn build_window(label: &str, title: &str) -> (Window, bool) {
             {
                 builder = builder.transparent(true).decorations(false);
             }
+            if label != "screenshot"{
+                builder = builder.transparent(false);
+            }
+
             let window = builder.build().unwrap();
 
             if label != "screenshot" {
                 #[cfg(not(target_os = "linux"))]
                 set_shadow(&window, true).unwrap_or_default();
-                #[cfg(target_os = "windows")]
-                apply_acrylic(&window, Some((18, 18, 18, 125))).expect("Unsupported platform! 'apply_blur' is only supported on Windows");
+                // #[cfg(target_os = "windows")]
+                // apply_acrylic(&window, Some((18, 18, 18, 125))).expect("Unsupported platform! 'apply_blur' is only supported on Windows");
             }
             let _ = window.current_monitor();
             // info!("Create windows {:?}",window);

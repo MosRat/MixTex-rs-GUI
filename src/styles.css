@@ -5,7 +5,7 @@
     font-weight: 400;
 
     color: #0f0f0f;
-    background-color: transparent;
+    background-color: #dfdfdf;
     margin: 0;
     padding: 0;
 
@@ -31,7 +31,7 @@ body {
 @media (prefers-color-scheme: dark) {
     :root {
         color: #f6f6f6;
-        background-color: transparent;
+        background-color: #2f2f2f;
     }
 
 }
