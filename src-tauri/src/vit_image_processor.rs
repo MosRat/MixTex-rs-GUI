@@ -1,15 +1,16 @@
+use std::cmp::min;
 use std::path::Path;
 
-use image::{load_from_memory, DynamicImage, GenericImageView, ImageReader};
+use image::{load_from_memory, DynamicImage, GenericImage, GenericImageView, ImageReader, Rgb, Rgb32FImage};
 use image::imageops::FilterType;
 
 
 struct Config {
-    width: u32,
-    height: u32,
-    rescale_factor: f32,
-    norm_mean: f32,
-    norm_std: f32,
+    pub width: u32,
+    pub height: u32,
+    pub rescale_factor: f32,
+    pub norm_mean: f32,
+    pub  norm_std: f32,
 }
 
 const CONFIG: Config = Config {
@@ -22,6 +23,19 @@ const CONFIG: Config = Config {
 
 pub fn resize(img: DynamicImage) -> DynamicImage {
     img.resize_exact(CONFIG.width, CONFIG.height, FilterType::CatmullRom)
+}
+
+pub fn padding(img:DynamicImage) ->DynamicImage{
+    let mut background =  DynamicImage::from(Rgb32FImage::from_pixel(CONFIG.width,CONFIG.height,Rgb::from([255_f32,255_f32,255_f32])));
+    if img.width()<=CONFIG.width && img.height()<=CONFIG.height{
+        background.sub_image((CONFIG.width - img.width())/2,(CONFIG.height-img.height())/2,img.width(),img.height()).copy_from(&img,0,0).expect("fail!");
+    }else {
+        let scale = (CONFIG.width as f32/img.width() as f32 ).min(CONFIG.height as f32/img.height() as f32);
+        let img_resize = img.resize_exact((img.width() as f32*scale) as u32, (img.height() as f32 *scale) as u32, FilterType::Lanczos3);
+        background.sub_image((CONFIG.width - img_resize.width())/2,(CONFIG.height-img_resize.height())/2,img_resize.width(),img_resize.height()).copy_from(&img_resize,0,0).expect("fail!");
+    }
+    background.to_rgba8().save("./img.png").expect("fail to padding!");
+    DynamicImage::from(background.to_rgba8())
 }
 
 pub fn rescale_and_normalize(img: DynamicImage) -> DynamicImage {

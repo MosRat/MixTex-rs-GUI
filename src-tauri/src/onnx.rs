@@ -83,11 +83,7 @@ impl MixTexOnnx {
         let  v_0 = Array::<f32, _>::zeros((1, 12, 0, 64).f()).into_dyn();
         let  v_1 = Array::<f32, _>::zeros((1, 12, 0, 64).f()).into_dyn();
         let  v_2 = Array::<f32, _>::zeros((1, 12, 0, 64).f()).into_dyn();
-        // (1, 2, 3).f();
 
-        // eprintln!("Encode end, start decoder loop");
-
-        // let check_rate = MAX_LENGTH / 64;
 
         let decoder_result = self.decoder_session.run(ort::inputs! {
             "encoder_hidden_states" => hidden_state.view(),
