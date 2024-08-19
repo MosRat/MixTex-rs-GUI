@@ -1,8 +1,9 @@
-use std::cmp::min;
+
 use std::path::Path;
 
 use image::{load_from_memory, DynamicImage, GenericImage, GenericImageView, ImageReader, Rgb, Rgb32FImage};
 use image::imageops::FilterType;
+use log::info;
 
 
 struct Config {
@@ -35,6 +36,7 @@ pub fn padding(img:DynamicImage) ->DynamicImage{
         background.sub_image((CONFIG.width - img_resize.width())/2,(CONFIG.height-img_resize.height())/2,img_resize.width(),img_resize.height()).copy_from(&img_resize,0,0).expect("fail!");
     }
     background.to_rgba8().save("./img.png").expect("fail to padding!");
+    info!("{:?} {:?} {:?}",background.color(),background.width(),background.height());
     DynamicImage::from(background.to_rgba8())
 }
 
@@ -57,7 +59,7 @@ pub fn rescale_and_normalize(img: DynamicImage) -> DynamicImage {
 
 pub fn preprocess(path: impl AsRef<Path>) -> Result<Vec<f32>,String> {
 
-    let img = rescale_and_normalize(resize(
+    let img = rescale_and_normalize(padding(
         ImageReader::open(path)
             .map_err(|err| err.to_string())?
             .decode()

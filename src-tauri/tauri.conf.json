@@ -7,7 +7,7 @@
   },
   "package": {
     "productName": "mixtex-rs-gui",
-    "version": "0.1.1"
+    "version": "0.2.1"
   },
   "tauri": {
     "allowlist": {
@@ -55,6 +55,7 @@
     },
     "bundle": {
       "active": true,
+      "copyright": "GPLv3",
       "targets": "all",
       "identifier": "com.mosrat.mixtex-rs-gui",
       "longDescription": "Latex and ocr software powered by MixTex-rs and Tauri",
@@ -65,7 +66,21 @@
         "icons/128x128@2x.png",
         "icons/icon.icns",
         "icons/icon.ico"
-      ]
+      ],
+      "deb": {
+        "depends": [
+          "libxdo-dev",
+          "libxcb1",
+          "libxrandr2"
+        ]
+      },
+      "macOS": {
+        "entitlements": null,
+        "exceptionDomain": "",
+        "frameworks": [],
+        "providerShortName": null,
+        "signingIdentity": null
+      }
     },
     "systemTray": {
       "iconPath": "icons/icon.png",
