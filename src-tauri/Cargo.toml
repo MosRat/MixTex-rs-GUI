@@ -1,6 +1,6 @@
 [package]
 name = "mixtex-rs-gui"
-version = "0.1.0"
+version = "0.1.1"
 description = "Mixtex gui app"
 authors = ["MosRat"]
 edition = "2021"
@@ -44,11 +44,13 @@ custom-protocol = ["tauri/custom-protocol"]
 
 
 [profile.dev]
-#opt-level = 3
+incremental = true # Compile your binary in smaller steps.
 
 [profile.release]
-opt-level = 3
-lto = true
-panic = 'abort'
+codegen-units = 1 # Allows LLVM to perform better optimization.
+lto = true # Enables link-time-optimizations.
+opt-level = 3 # Prioritizes small binary size. Use `3` if you prefer speed.
+panic = "abort" # Higher performance by disabling panic handlers.
+strip = true # Ensures debug symbols are removed.
 
 
