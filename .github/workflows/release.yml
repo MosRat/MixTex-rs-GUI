@@ -99,10 +99,19 @@ jobs:
       - name: install frontend dependencies
         run: pnpm install  --no-frozen-lockfile # change this to npm, pnpm or bun depending on which one you use.
 
-      - name: Set timestamp
-        id: timestamp
+      - name: Generate release tag (Unix)
+        if: runner.os != 'Windows'
+        id: generate_tag_unix
+        run: echo "TAG=${GITHUB_RUN_NUMBER}-${GITHUB_SHA::7}" >> $GITHUB_OUTPUT
+        shell: bash
+
+      - name: Generate release tag (Windows)
+        if: runner.os == 'Windows'
+        id: generate_tag_windows
         run: |
-          echo "TIMESTAMP=$(date +'%Y%m%d%H%M')" >> $GITHUB_OUTPUT
+          $tag = "${env:GITHUB_RUN_NUMBER}-$($env:GITHUB_SHA.Substring(0,7))"
+          echo "TAG=$tag" >> $env:GITHUB_OUTPUT
+        shell: pwsh
 
       - uses: tauri-apps/tauri-action@v0
         env:
@@ -110,7 +119,7 @@ jobs:
           ORT_LIB_LOCATION: ${{ github.workspace }}/lib/${{ matrix.libs }}
 
         with:
-          tagName: app-v__VERSION__-${{ steps.timestamp.outputs.TIMESTAMP }} # the action automatically replaces \_\_VERSION\_\_ with the app version.
+          tagName: app-v__VERSION__-${{ steps.generate_tag_windows.outputs.TAG }}${{ steps.generate_tag_unix.outputs.TAG }} # the action automatically replaces \_\_VERSION\_\_ with the app version.
           releaseName: 'App v__VERSION__'
           releaseBody: 'See the assets to download this version and install.'
           releaseDraft: true
