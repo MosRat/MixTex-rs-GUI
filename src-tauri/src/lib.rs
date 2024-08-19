@@ -15,6 +15,8 @@ pub mod window;
 
 pub mod tray;
 
+pub mod config;
+
 pub static APP: OnceCell<tauri::AppHandle> = OnceCell::new();
 // Text to be translated
 pub struct ImageWrapper(pub Mutex<Vec<u8>>);
