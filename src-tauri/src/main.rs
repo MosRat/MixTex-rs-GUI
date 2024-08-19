@@ -5,14 +5,19 @@
 use std::path::PathBuf;
 use std::sync::{Arc, Mutex};
 use std::sync::atomic::{AtomicBool, Ordering};
+
 use tauri::{GlobalShortcutManager, Manager, State};
+
+#[cfg(not(target_os = "linux"))]
 use window_shadows::set_shadow;
+#[cfg(not(target_os = "linux"))]
 use window_vibrancy::{apply_acrylic,apply_vibrancy,};
-use mixtex_rs_gui::onnx::MixTexOnnx;
-use mixtex_rs_gui::vit_image_processor::preprocess;
 
 use tauri::api::notification::Notification;
 use tauri_plugin_log::LogTarget;
+
+use mixtex_rs_gui::onnx::MixTexOnnx;
+use mixtex_rs_gui::vit_image_processor::preprocess;
 use mixtex_rs_gui::{APP, hotkey::register};
 use mixtex_rs_gui::tray::{tray_event_handler, update_tray};
 use mixtex_rs_gui::screenshot::*;

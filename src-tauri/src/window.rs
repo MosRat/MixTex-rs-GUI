@@ -5,10 +5,14 @@ use tauri::Manager;
 use tauri::Monitor;
 use tauri::Window;
 use tauri::WindowBuilder;
-use window_shadows::set_shadow;
+
 use crate::APP;
 use log::info;
+
+#[cfg(target_os = "windows")]
 use window_vibrancy::apply_acrylic;
+#[cfg(not(target_os = "linux"))]
+use window_shadows::set_shadow;
 
 // Get daemon window instance
 fn get_daemon_window() -> Window {
