@@ -35,8 +35,8 @@ pub fn padding(img:DynamicImage) ->DynamicImage{
         let img_resize = img.resize_exact((img.width() as f32*scale) as u32, (img.height() as f32 *scale) as u32, FilterType::Lanczos3);
         background.sub_image((CONFIG.width - img_resize.width())/2,(CONFIG.height-img_resize.height())/2,img_resize.width(),img_resize.height()).copy_from(&img_resize,0,0).expect("fail!");
     }
-    background.to_rgba8().save("./img.png").expect("fail to padding!");
-    info!("{:?} {:?} {:?}",background.color(),background.width(),background.height());
+    // background.to_rgba8().save("./img.png").expect("fail to padding!");
+    // info!("{:?} {:?} {:?}",background.color(),background.width(),background.height());
     DynamicImage::from(background.to_rgba8())
 }
 
