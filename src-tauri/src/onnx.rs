@@ -88,7 +88,7 @@ impl MixTexOnnx {
         let decoder_result = self.decoder_session.run(ort::inputs! {
             "encoder_hidden_states" => hidden_state.view(),
             "input_ids"=> decode_input_ids.view(),
-            // "use_cache_branch"=>array![true],
+            "use_cache_branch"=>array![true],
             "past_key_values.0.key"=>k_0.view(),
             "past_key_values.0.value"=>v_0.view(),
             "past_key_values.1.key"=>k_1.view(),
@@ -115,7 +115,7 @@ impl MixTexOnnx {
         decoder_result = self.decoder_session.run(ort::inputs! {
             "encoder_hidden_states" => hidden_state.view(),
             "input_ids"=> array![[next_token_id as i64]],
-            // "use_cache_branch"=>array![true],
+            "use_cache_branch"=>array![true],
             "past_key_values.0.key"=>decoder_result["present.0.key"].try_extract_tensor::<f32>()?,
             "past_key_values.0.value"=>decoder_result["present.0.value"].try_extract_tensor::<f32>()?,
             "past_key_values.1.key"=>decoder_result["present.1.key"].try_extract_tensor::<f32>()?,

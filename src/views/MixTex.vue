@@ -53,8 +53,11 @@ const scrollToBottom = () => {
 
 watch(decodeText, () => {
   nextTick(() => {
-    renderMathInElement(katexRef.value, {});
+    if(katexRef.value){
+        renderMathInElement(katexRef.value, {});
+    }
     scrollToBottom()
+
   });
 }, {immediate: true});
 
