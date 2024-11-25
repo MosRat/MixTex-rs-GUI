@@ -1,0 +1,80 @@
+/*尝试注入*/
+html, body {
+    background-color: rgba(255, 255, 255, 0) !important; /* 设置背景透明 */
+    margin: 0;
+    height: initial !important;
+    padding: 0;
+}
+
+body {
+    padding-bottom: 20vh !important;
+}
+
+#txta_input, #div_copy {
+    background-color: rgba(255, 255, 255, 0.25) !important; /* 设置背景透明 */
+}
+
+/*.dropdown-menu {*/
+/*    background: linear-gradient(rgba(252, 248, 235, 0.25), rgba(255, 250, 230, 0.25)) !important;*/
+/*    -webkit-backdrop-filter: blur(25px) !important;*/
+/*    backdrop-filter: blur(25px) !important;*/
+/*}*/
+
+.card, .card-body, .card-header {
+    background: linear-gradient(rgba(252, 248, 235, 0.1), rgba(255, 250, 230, 0.1)) !important;
+    -webkit-backdrop-filter: blur(5px) !important;
+    backdrop-filter: blur(5px) !important;
+}
+
+.card {
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+}
+
+.btn-outline-primary {
+    color: inherit !important;
+}
+
+.main-input{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+#wrap_txtainput{
+    margin: 0 !important;
+}
+
+#screenshot{
+    margin-top: 5px;
+}
+
+.flat-row,.flat-col{
+    position: relative !important;
+}
+.flat-row > :first-child
+{
+    z-index: 1 !important;
+}
+
+/*滚动条设置*/
+/* 隐藏整个滚动条 */
+::-webkit-scrollbar {
+    width: 6px; /* 可以调整滚动条的宽度 */
+    height: 6px; /* 对于水平滚动条的高度也可以调整 */
+}
+
+/* 隐藏滚动条按钮（上下箭头） */
+::-webkit-scrollbar-button {
+    display: none;
+}
+
+/* 设置滚动条滑块（滑动部分）的样式 */
+::-webkit-scrollbar-thumb {
+    background-color: rgba(107, 107, 107, 0.75); /* 设置一个半透明的滑块 */
+    border-radius: 4px;
+}
+
+/* 设置滚动条轨道透明 */
+::-webkit-scrollbar-track {
+    background-color: rgba(100, 100, 100, 0)
+}

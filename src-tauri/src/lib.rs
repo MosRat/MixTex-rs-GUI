@@ -1,49 +1,98 @@
 #![allow(non_snake_case)]
 
-use std::sync::Mutex;
-use once_cell::sync::OnceCell;
 
+pub mod setup;
 pub mod vit_image_processor;
 // pub mod winml;
 
 pub mod onnx;
 
-pub mod screenshot;
 pub mod hotkey;
+pub mod screenshot;
 
 pub mod window;
 
 pub mod tray;
 
-pub mod config;
+pub mod mixtex;
+mod model;
 
-pub static APP: OnceCell<tauri::AppHandle> = OnceCell::new();
-// Text to be translated
-pub struct ImageWrapper(pub Mutex<Vec<u8>>);
+use log::info;
+use std::sync::{Mutex, OnceLock};
 
-const ENCODER_BYTES: &[u8] = include_bytes!(concat!(env!("CARGO_MANIFEST_DIR"), r"/../models/encoder_model.onnx"));
-const DECODER_BYTES: &[u8] = include_bytes!(concat!(env!("CARGO_MANIFEST_DIR"), r"/../models/decoder_model_merged.onnx"));
-const TOKENIZER_STR: &str = include_str!(concat!(env!("CARGO_MANIFEST_DIR"), r"/../models/tokenizer/tokenizer.json"));
-// const TOKENIZER_STR: &str = "";
+use tauri::{AppHandle, Manager, Theme};
+
+use crate::setup::setup;
+use crate::tray::create_tray;
+use tauri_plugin_log::{Target, TargetKind};
+use tauri_plugin_notification::NotificationExt;
+use crate::screenshot::{get_screenshot, screenshot};
+use crate::mixtex::generate;
+
+pub static APP: OnceLock<AppHandle> = OnceLock::new();
 
 
-pub fn check_repeat(tokens: &[u32]) -> bool {
-    if tokens.len() < 16 {
-        return false;
-    }
-    for pattern_length in 2..=(tokens.len() / 12) {
-        for start in (0..(tokens.len() - pattern_length * 12)).rev() {
-            let rpt = tokens[start..(start + pattern_length)].repeat(12);
-            if tokens[start..]
-                .windows(pattern_length * 12)
-                .rev()
-                .any(|x| {
-                    x.eq(&rpt)
-                }) {
-                return true;
+// #[cfg_attr(mobile, tauri::mobile_entry_point)]
+pub fn run() {
+    tauri::Builder::default()
+        .plugin(tauri_plugin_os::init())
+        .plugin(tauri_plugin_shell::init())
+        .plugin(tauri_plugin_fs::init())
+        .plugin(tauri_plugin_dialog::init())
+        .plugin(tauri_plugin_notification::init())
+        .plugin(tauri_plugin_single_instance::init(|app, _, cwd| {
+            app.notification()
+                .builder()
+                .title("The program is already running. Please do not start it again!")
+                .body(cwd)
+                .icon("pot")
+                .show()
+                .unwrap();
+        }))
+        .plugin(
+            tauri_plugin_log::Builder::new()
+                .targets([
+                    Target::new(TargetKind::LogDir { file_name: None }),
+                    Target::new(TargetKind::Stdout),
+                    // Target::new(TargetKind::Webview),
+                ])
+                .level(log::LevelFilter::Info)
+                .build(),
+        )
+        .plugin(tauri_plugin_clipboard::init())
+        .plugin(tauri_plugin_global_shortcut::Builder::new().build())
+        .setup(|app| {
+            // global app handle
+            APP.get_or_init(|| app.handle().clone());
+
+            // create tray before other setup
+            create_tray(app.handle())?;
+
+            // setup app in async runtime
+            tauri::async_runtime::spawn(setup(app.handle().clone()));
+            // let clipboard = app.app_handle().state::<tauri_plugin_clipboard::ClipboardManager>();
+            // clipboard.read_image_binary().unwrap();
+
+            // APP.get_or_init(|| app.handle());
+
+            Ok(())
+        })
+        .invoke_handler(tauri::generate_handler![screenshot,generate,get_screenshot])
+        // .on_system_tray_event(tray_event_handler)
+        .build(tauri::generate_context!())
+        .expect("error while running tauri application")
+        // 保活
+        .run(|_app_handle, event| match event {
+            tauri::RunEvent::ExitRequested { api, code, .. } => {
+                info!("App requested exit");
+                match code {
+                    None => api.prevent_exit(),
+                    Some(_) => {}
+                }
             }
-        }
-    }
-
-    false
+            tauri::RunEvent::Exit => {
+                info!("App exit");
+            }
+            _ => {}
+        });
 }

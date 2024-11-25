@@ -1,99 +1,81 @@
-// modified from https://github.com/pot-app/pot-desktop/blob/master/src-tauri/src/window.rs
+// Modified from Pot App : https://github.com/pot-app/pot-desktop/blob/master/src-tauri/src/window.rs
 
-
-use tauri::Manager;
-use tauri::Monitor;
-use tauri::Window;
-use tauri::WindowBuilder;
+/*
+ * Copyright (c) 2024. MosRat
+ * All rights reserved.
+ *
+ * Project: mixtex-rs-gui
+ * File Name: window.rs
+ * Author: MosRat (work@whl.moe)
+ * Description:
+ */
 
 use crate::APP;
-use log::info;
-
-#[cfg(target_os = "windows")]
-use window_vibrancy::apply_acrylic;
-#[cfg(not(target_os = "linux"))]
-use window_shadows::set_shadow;
-
+use anyhow::Result;
+use log::{info, warn};
+use tauri::utils::config::WindowEffectsConfig;
+use tauri::utils::WindowEffect;
+use tauri::{Emitter, Manager, Monitor, PhysicalPosition, WebviewWindow, Window, WindowBuilder};
+// Unnecessary in tauri 2.0
 // Get daemon window instance
-fn get_daemon_window() -> Window {
-    let app_handle = APP.get().unwrap();
-    match app_handle.get_window("daemon") {
-        Some(v) => v,
-        None => {
-            info!("Daemon window not found, create new daemon window!");
-            WindowBuilder::new(
-                app_handle,
-                "daemon",
-                tauri::WindowUrl::App("daemon.html".into()),
-            )
-                .title("Daemon")
-                .additional_browser_args("--disable-web-security")
-                .visible(false)
-                .build()
-                .unwrap()
-        }
-    }
-}
+// fn get_daemon_window() -> Window {
+//     let app_handle = APP.get().unwrap();
+//     match app_handle.get_window("daemon") {
+//         Some(v) => v,
+//         None => {
+//             warn!("Daemon window not found, create new daemon window!");
+//             WindowBuilder::new(
+//                 app_handle,
+//                 "daemon",
+//             )
+//                 .title("Daemon")
+//                 .visible(false)
+//                 .skip_taskbar(true)
+//                 .build()
+//                 .unwrap()
+//         }
+//     }
+// }
 
+// Different in tauri 2.0
 // Get monitor where the mouse is currently located
-fn get_current_monitor(x: i32, y: i32) -> Monitor {
-    info!("Mouse position: {}, {}", x, y);
-    let daemon_window = get_daemon_window();
-    let monitors = daemon_window.available_monitors().unwrap();
-
-    for m in monitors {
-        let size = m.size();
-        let position = m.position();
-
-        if x >= position.x
-            && x <= (position.x + size.width as i32)
-            && y >= position.y
-            && y <= (position.y + size.height as i32)
-        {
-            info!("Current Monitor: {:?}", m);
-            return m;
+pub fn get_current_monitor() -> Monitor {
+    let app = APP.get().unwrap();
+    match app.cursor_position() {
+        Ok(PhysicalPosition { x, y }) => match app.monitor_from_point(x, y) {
+            Ok(Some(m)) => m,
+            _ => {
+                warn!("Fail get monitor!");
+                app.primary_monitor().unwrap().unwrap()
+            }
+        },
+        Err(e) => {
+            warn!("Fail to get cursor {e:?}");
+            app.primary_monitor().unwrap().unwrap()
         }
     }
-    info!("Current Monitor not found, using primary monitor");
-    daemon_window.primary_monitor().unwrap().unwrap()
 }
 
 // Creating a window on the mouse monitor
-pub fn build_window(label: &str, title: &str) -> (Window, bool) {
-    use mouse_position::mouse_position::{Mouse, Position};
-
-    let mouse_position = match Mouse::get_mouse_position() {
-        Mouse::Position { x, y } => Position { x, y },
-        Mouse::Error => {
-            info!("Mouse position not found, using (0, 0) as default");
-            Position { x: 0, y: 0 }
-        }
-    };
-    let current_monitor = get_current_monitor(mouse_position.x, mouse_position.y);
-    let position = current_monitor.position();
-
+pub fn build_window(label: &str, title: &str) -> (WebviewWindow, bool) {
     let app_handle = APP.get().unwrap();
-    match app_handle.get_window(label) {
+    match app_handle.get_webview_window(label) {
         Some(v) => {
             info!("Window existence: {}", label);
-            if v.is_minimized().unwrap() {
-                v.unminimize().unwrap();
-            }
             v.set_focus().unwrap();
             (v, true)
         }
         None => {
             info!("Window not existence, Creating new window: {}", label);
-            let mut builder = tauri::WindowBuilder::new(
+            let mut builder = tauri::WebviewWindowBuilder::new(
                 app_handle,
                 label,
-                tauri::WindowUrl::App("index.html".into()),
+                tauri::WebviewUrl::App("index.html".into()),
             )
-                .position(position.x.into(), position.y.into())
-                // .additional_browser_args("--disable-web-security")
-                .focused(true)
-                .title(title);
-                // .visible(false);
+            .enable_clipboard_access()
+            .title(title)
+            .visible(false)
+                ;
 
             #[cfg(target_os = "macos")]
             {
@@ -103,33 +85,51 @@ pub fn build_window(label: &str, title: &str) -> (Window, bool) {
             }
             #[cfg(not(target_os = "macos"))]
             {
-                builder = builder.transparent(true).decorations(false);
-                if label != "screenshot"{
-                    builder = builder.transparent(true)
-                }
+                builder = builder.transparent(true);
+                // .decorations(false);
+            }
+            #[cfg(target_os = "windows")]
+            {
+                builder = builder
             }
 
             let window = builder.build().unwrap();
 
             if label != "screenshot" {
                 #[cfg(not(target_os = "linux"))]
-                set_shadow(&window, true).unwrap_or_default();
-                // #[cfg(target_os = "windows")]
-                // apply_acrylic(&window, Some((18, 18, 18, 125))).expect("Unsupported platform! 'apply_blur' is only supported on Windows");
+                window.set_shadow(true).unwrap();
+                #[cfg(target_os = "windows")]
+                window
+                    .set_effects(WindowEffectsConfig {
+                        effects: vec![WindowEffect::Tabbed],
+                        state: None,
+                        radius: None,
+                        color: None,
+                    })
+                    .unwrap();
             }
-            let _ = window.current_monitor();
-            // info!("Create windows {:?}",window);
             (window, false)
         }
     }
 }
 
-pub fn screenshot_window() -> Window {
-    let (window, _exists) = build_window("screenshot", "Screenshot");
+pub fn config_window() {
+    let (window, _exists) = build_window("config", "Fast Writer Config");
+    window
+        .set_min_size(Some(tauri::LogicalSize::new(800, 400)))
+        .unwrap();
+    window.set_size(tauri::LogicalSize::new(800, 600)).unwrap();
+    window.set_resizable(false).unwrap();
+    window.center().unwrap();
+    window.show().unwrap();
+}
 
+pub fn build_screenshot_window() -> WebviewWindow {
+    let (window, _exists) = build_window("screenshot", "Screenshot");
     window.set_skip_taskbar(true).unwrap();
-    window.set_decorations(false).unwrap();
-    
+
+    info!(">>>>>>>>>>>>>>>>>>>>Windows Build!>>>>>>>>>>>>>>>>");
+
     #[cfg(target_os = "macos")]
     {
         let monitor = window.current_monitor().unwrap().unwrap();
@@ -145,10 +145,66 @@ pub fn screenshot_window() -> Window {
     window
 }
 
-// pub fn ocr_recognize() {
-//     let window = screenshot_window();
-//     // let img =  APP.get().unwrap().state()
-//     window.once("success_save", move |event| {
-//         // recognize_window();
-//     });
-// }
+pub fn screenshot_window() -> WebviewWindow {
+    let window = APP.get().unwrap().get_webview_window("screenshot").unwrap();
+
+    info!(">>>>>>>>>>>>>>>>>>>>Windows Return!>>>>>>>>>>>>>>>>");
+
+    window.emit("activate", "").unwrap();
+
+    window
+}
+
+pub fn build_formula_window() -> (WebviewWindow, bool) {
+    let app_handle = APP.get().unwrap();
+    match app_handle.get_webview_window("formula") {
+        Some(window) => {
+            window.show().unwrap();
+            window.set_focus().unwrap();
+            (window, true)
+        }
+        None => {
+            info!("Window not existence, Creating new window: {}", "formula");
+            let mut builder = tauri::WebviewWindowBuilder::new(
+                app_handle,
+                "formula",
+                // tauri::WebviewUrl::External("https://www.latexlive.com/".parse().unwrap()),
+                tauri::WebviewUrl::App("editor.html".parse().unwrap()),
+            )
+            .enable_clipboard_access()
+            .decorations(false)
+            .resizable(false)
+            // .initialization_script(include_str!("../scripts/formula_editor.js"))
+            .disable_drag_drop_handler()
+            .title("Latex Formula Editor")
+            .transparent(true)
+            .min_inner_size(800f64, 200f64)
+            .inner_size(800f64, 600f64)
+            .visible(false);
+            let window = builder.build().unwrap();
+            #[cfg(not(target_os = "linux"))]
+            window.set_shadow(true).unwrap();
+            #[cfg(target_os = "windows")]
+            {
+                window
+                    .set_effects(WindowEffectsConfig {
+                        effects: vec![WindowEffect::Tabbed],
+                        state: None,
+                        radius: None,
+                        color: None,
+                    })
+                    .unwrap();
+            }
+
+            (window, false)
+        }
+    }
+    // let (window, _exists) = build_window("formula", "Formula");
+    // window.set_resizable(false).unwrap();
+    // window.eval(include_str!("../scripts/formula_editor.js")).unwrap()
+}
+
+#[tauri::command(async)]
+pub fn formula_window() {
+    let _ = build_formula_window();
+}

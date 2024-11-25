@@ -1,39 +1,23 @@
+use log::warn;
+use tauri::AppHandle;
+use tauri_plugin_global_shortcut::{GlobalShortcutExt, Shortcut, ShortcutEvent, ShortcutWrapper};
 
-use crate::APP;
-use tauri::{AppHandle, GlobalShortcutManager};
-
-pub fn register<F>(app_handle: &AppHandle, name: &str, handler: F, key: &str) -> Result<(), String>
+pub fn register_hotkey<F>(app_handle: &AppHandle, handler: F, key: &str) -> Result<(), String>
 where
-    F: Fn() + Send + 'static,
+    F: Fn(&AppHandle, &Shortcut, ShortcutEvent) + Send + Sync + 'static,
 {
-    let hotkey = key.to_string();
-    //     {
-    //     if key.is_empty() {
-    //         match get(name) {
-    //             Some(v) => v.as_str().unwrap().to_string(),
-    //             None => {
-    //                 set(name, "");
-    //                 String::new()
-    //             }
-    //         }
-    //     } else {
-    //         key.to_string()
-    //     }
-    // };
-
-    if !hotkey.is_empty() {
-        match app_handle
-            .global_shortcut_manager()
-            .register(hotkey.as_str(), handler)
-        {
-            Ok(()) => {
-                eprintln!("Registered global shortcut: {} for {}", hotkey, name);
-            }
+    if !key.is_empty() {
+        match app_handle.global_shortcut().on_shortcut(
+            ShortcutWrapper::try_from(key).map_err(|e| e.to_string())?,
+            handler,
+        ) {
+            Ok(_) => Ok(()),
             Err(e) => {
-                eprintln!("Failed to register global shortcut: {} {:?}", hotkey, e);
-                return Err(e.to_string());
+                warn!("Fail to set key  {key} : {e:?}");
+                Err(e.to_string())
             }
-        };
+        }
+    } else {
+        Ok(())
     }
-    Ok(())
 }

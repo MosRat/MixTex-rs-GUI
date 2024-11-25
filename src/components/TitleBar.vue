@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { appWindow } from '@tauri-apps/api/window'
+import { getCurrentWebviewWindow } from '@tauri-apps/api/webviewWindow'
+const appWindow = getCurrentWebviewWindow()
 </script>
 
 <template>

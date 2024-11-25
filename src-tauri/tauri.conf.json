@@ -1,90 +1,84 @@
 {
+  "$schema": "./config-schema.json",
   "build": {
     "beforeDevCommand": "pnpm dev",
     "beforeBuildCommand": "pnpm build",
-    "devPath": "http://localhost:1420",
-    "distDir": "../dist"
+    "frontendDist": "../dist",
+    "devUrl": "http://localhost:1420"
   },
-  "package": {
-    "productName": "mixtex-rs-gui",
-    "version": "0.2.2"
-  },
-  "tauri": {
-    "allowlist": {
-      "all": true,
-      "globalShortcut": {
-        "all": true
-      },
-      "shell": {
-        "all": false,
-        "open": true
-      },
-      "app": {
-        "all": true
-      },
-       "protocol":
-       {
-          "asset": true,
-          "assetScope": [
-              "$CACHE/**",
-              "$CONFIG/**"
-          ]
-      }
+  "bundle": {
+    "active": true,
+    "copyright": "GPLv3",
+    "targets": "all",
+    "macOS": {
+      "entitlements": null,
+      "exceptionDomain": "",
+      "frameworks": [],
+      "providerShortName": null,
+      "signingIdentity": null
     },
-    "windows": [
-      {
-        "title": "Daemon",
-        "label": "daemon",
-        "visible": false,
-        "url": "daemon.html"
-      },
-      {
-        "title": "mixtex-rs-gui",
-        "label": "main",
-        "transparent": true,
-        "decorations": false,
-        "alwaysOnTop": false,
-        "width": 800,
-        "height": 600,
-        "url": "index.html"
-      }
+    "longDescription": "Latex and ocr software powered by MixTex-rs and Tauri",
+    "shortDescription": "MixTex-rs GUI App",
+    "icon": [
+      "icons/32x32.png",
+      "icons/128x128.png",
+      "icons/128x128@2x.png",
+      "icons/icon.icns",
+      "icons/icon.ico"
     ],
-    "security": {
-      "csp": "default-src * data: ; img-src * 'self' asset: https: data: ; style-src * 'unsafe-inline'; worker-src 'self' blob: ; script-src * 'unsafe-eval';",
-      "devCsp": "default-src * data: ; img-src * 'self' asset: https: data: ; style-src * 'unsafe-inline'; worker-src 'self' blob: ; script-src * 'unsafe-eval';"
-    },
-    "bundle": {
-      "active": true,
-      "copyright": "GPLv3",
-      "targets": "all",
-      "identifier": "com.mosrat.mixtex-rs-gui",
-      "longDescription": "Latex and ocr software powered by MixTex-rs and Tauri",
-      "shortDescription": "MixTex-rs GUI App",
-      "icon": [
-        "icons/32x32.png",
-        "icons/128x128.png",
-        "icons/128x128@2x.png",
-        "icons/icon.icns",
-        "icons/icon.ico"
-      ],
+    "linux": {
       "deb": {
         "depends": [
           "libxdo-dev",
           "libxcb1",
           "libxrandr2"
         ]
-      },
-      "macOS": {
-        "entitlements": null,
-        "exceptionDomain": "",
-        "frameworks": [],
-        "providerShortName": null,
-        "signingIdentity": null
       }
-    },
-    "systemTray": {
+    }
+  },
+  "productName": "mixtex-rs-gui",
+  "mainBinaryName": "mixtex-rs-gui",
+  "version": "0.4.0",
+  "identifier": "com.mosrat.mixtex-rs-gui",
+  "plugins": {},
+  "app": {
+    "withGlobalTauri": true,
+    "trayIcon": {
       "iconPath": "icons/icon.png",
       "iconAsTemplate": true
+    },
+    "windows": [
+      {
+        "title": "MixTex",
+        "label": "main",
+        "transparent": true,
+        "decorations": false,
+        "alwaysOnTop": false,
+        "resizable": false,
+        "width": 800,
+        "height": 600,
+        "url": "editor.html",
+        "shadow": true,
+        "focus": true,
+        "windowEffects": {
+          "effects": [
+            "tabbedLight",
+            "acrylic"
+          ]
+        },
+        "center": true
+      }
+    ],
+    "security": {
+      "assetProtocol": {
+        "scope": [
+          "$CACHE/**",
+          "$CONFIG/**"
+        ],
+        "enable": true
+      },
+      "devCsp": "default-src * data: ; img-src * 'self' asset: https: data: ; style-src * 'unsafe-inline'; worker-src 'self' blob: ; script-src * 'unsafe-eval';",
+      "csp": "default-src * data: ; img-src * 'self' asset: https: data: ; style-src * 'unsafe-inline'; worker-src 'self' blob: ; script-src * 'unsafe-eval';; connect-src ipc: http://ipc.localhost"
     }
   }
 }

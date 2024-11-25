@@ -1,12 +1,13 @@
 <script setup lang="ts">
 import {nextTick, ref, watch} from 'vue'
-import {convertFileSrc, invoke} from "@tauri-apps/api/tauri";
-import { open } from '@tauri-apps/api/dialog';
-import {appWindow} from "@tauri-apps/api/window";
+import {convertFileSrc, invoke} from "@tauri-apps/api/core";
+import { open } from '@tauri-apps/plugin-dialog';
+import {getCurrentWebviewWindow} from "@tauri-apps/api/webviewWindow";
 import renderMathInElement from 'katex/dist/contrib/auto-render.mjs';
 import TitleBar from "@cp/TitleBar.vue";
 import {listen} from "@tauri-apps/api/event";
 import {appCacheDir, join} from "@tauri-apps/api/path";
+const appWindow = getCurrentWebviewWindow()
 
 const decodeText = ref('')
 const imgPath = ref('')
@@ -17,12 +18,12 @@ const katexRef = ref<HTMLDivElement | null>(null);
 const imgSrc = ref('');
 
 // 处理文件拖放
-appWindow.onFileDropEvent(event => {
-  if (event.payload.type === "drop") {
-    imgPath.value = event.payload.paths[0]
-    imgSrc.value = convertFileSrc(event.payload.paths[0]);
-  }
-})
+// appWindow.onFileDropEvent(event => {
+//   if (event.payload.type === "drop") {
+//     imgPath.value = event.payload.paths[0]
+//     imgSrc.value = convertFileSrc(event.payload.paths[0]);
+//   }
+// })
 
 // 监听截图图片
 listen("img_arrive",async () => {
