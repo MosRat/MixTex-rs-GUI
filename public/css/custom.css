@@ -39,6 +39,9 @@ body {
     flex-direction: column;
     align-items: center;
 }
+#div_copy,#txta_input{
+    height: 200px !important;
+}
 
 #wrap_txtainput{
     margin: 0 !important;
@@ -54,6 +57,13 @@ body {
 .flat-row > :first-child
 {
     z-index: 1 !important;
+}
+
+input[type="text"],select{
+    border: none;
+    border-radius: 4px;
+    margin-top: 2px;
+    background: rgba(255, 255, 255, 0.25);
 }
 
 /*滚动条设置*/

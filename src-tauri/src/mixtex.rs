@@ -1,7 +1,8 @@
 use crate::onnx::MixTexOnnx;
 use crate::screenshot::ScreenshotWrapper;
 use crate::vit_image_processor::{preprocess_from_memory, preprocess_from_rgb_array};
-use crate::APP;
+use crate::{api, APP};
+use std::string::ToString;
 
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::{Arc, Mutex};
@@ -44,18 +45,20 @@ impl<M: OcrModel> Model<M> {
     }
 
     pub fn inference(&self, img: &[f32]) -> Result<String> {
-        self.model.lock().map_err(|e| anyhow::anyhow!(e.to_string()))?.inference(img)
+        self.model
+            .lock()
+            .map_err(|e| anyhow::anyhow!(e.to_string()))?
+            .inference(img)
     }
 
-    pub fn generate<F>(
-        &self,
-        img: &[f32],
-        callback: F,
-    ) -> Result<String>
+    pub fn generate<F>(&self, img: &[f32], callback: F) -> Result<String>
     where
         F: FnMut(String) -> bool,
     {
-        self.model.lock().map_err(|e| anyhow::anyhow!(e.to_string()))?.generate(img, callback)
+        self.model
+            .lock()
+            .map_err(|e| anyhow::anyhow!(e.to_string()))?
+            .generate(img, callback)
     }
 }
 
@@ -65,7 +68,7 @@ pub enum GenEvent {
     #[serde(rename_all = "camelCase")]
     TokenArrive { token: String },
     #[serde(rename_all = "camelCase")]
-    Err,
+    Err { err: String },
     #[serde(rename_all = "camelCase")]
     Stop,
 }
@@ -76,37 +79,63 @@ pub async fn generate(
     model: State<'_, Model<MixTexOnnx>>,
     window: tauri::WebviewWindow,
     ch: tauri::ipc::Channel<GenEvent>,
+    backend: String,
+    token: String,
 ) -> Result<String, String> {
     let img = screenshot.get_data();
-    let (w,h) = screenshot.get_wh();
+    let (w, h) = screenshot.get_wh();
     if img.is_empty() {
-        ch.send(GenEvent::Err).unwrap();
-        return Err("No Image!".to_string())
-    }
-    let stop = Arc::new(AtomicBool::new(false));
-    let stop_arc = Arc::clone(&stop);
-    window.once("stop", move |_| stop_arc.store(true, Ordering::SeqCst));
-    let res = model
-        .generate(&preprocess_from_rgb_array(&img,w,h)?, |token| {
-            let s = stop.load(Ordering::SeqCst);
-            ch.send(if !s {
-                // info!("token:{:?}",token);
-                GenEvent::TokenArrive { token }
-            } else {
-                GenEvent::Stop
-            })
-                .unwrap();
-            s
+        ch.send(GenEvent::Err {
+            err: "No Image!".to_string(),
         })
-        .map_err(|err| err.to_string())?;
-    if !stop.load(Ordering::SeqCst) {
-        ch.send(GenEvent::Stop).unwrap();
+        .unwrap();
+        return Err("No Image!".to_string());
     }
-    Ok(res)
+    match backend.as_str() {
+        "mixtex" => {
+            let stop = Arc::new(AtomicBool::new(false));
+            let stop_arc = Arc::clone(&stop);
+            window.once("stop", move |_| stop_arc.store(true, Ordering::SeqCst));
+            let res = model
+                .generate(&preprocess_from_rgb_array(&img, w, h)?, |token| {
+                    let s = stop.load(Ordering::SeqCst);
+                    ch.send(if !s {
+                        // info!("token:{:?}",token);
+                        GenEvent::TokenArrive { token }
+                    } else {
+                        GenEvent::Stop
+                    })
+                    .unwrap();
+                    s
+                })
+                .map_err(|err| err.to_string())?;
+            if !stop.load(Ordering::SeqCst) {
+                ch.send(GenEvent::Stop).unwrap();
+            }
+            Ok(res)
+        }
+        "sl" => {
+            let img_png = api::encode_rgba_to_png(&img, w, h).unwrap();
+            let res_text = api::simple_latex(img_png, &token)
+                .await
+                .map_err(|e| e.to_string())?;
+            ch.send(GenEvent::TokenArrive { token: res_text }).unwrap();
+            ch.send(GenEvent::Stop).unwrap();
+            Ok(token)
+        }
+        "got" => Ok(token),
+        _ => {
+            ch.send(GenEvent::Err {
+                err: "Not support backend type!".to_string(),
+            })
+            .unwrap();
+            Err("Not support backend type!".to_string())
+        }
+    }
 }
 
 #[tauri::command]
-pub async fn read_image(path:String,img: State<'_, ScreenshotWrapper>,)->Result<(),String>{
+pub async fn read_image(path: String, img: State<'_, ScreenshotWrapper>) -> Result<(), String> {
     use xcap::image;
     img.set_data(image::open(path).map_err(|e| e.to_string())?.as_bytes());
     Ok(())

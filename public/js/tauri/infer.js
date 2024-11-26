@@ -1,3 +1,20 @@
+const replaceChars = {
+    "\\(": "$$",
+    "\\)": "$$",
+    "\\[": "$$$",
+    "\\]": "$$$"
+}
+
+function replaceWithDictionary(input, dictionary) {
+    console.log(input)
+    let output = input;
+    for (const [key, value] of Object.entries(dictionary)) {
+        // const regex = new RegExp(key, 'g');
+        output = output.replace(key, value);
+    }
+    return output;
+}
+
 function simulateUserInput(textarea, text) {
     if (textarea) {
         // 设置文本
@@ -22,20 +39,19 @@ const handleStart = async (event) => {
     const channel = new Channel();
 
     channel.onmessage = async (message) => {
-        console.log(`got event ${JSON.stringify(message)} ${message?.data?.token}`);
         switch (message.event) {
-            case "tokenArrive":{
-                simulateUserInput(textarea,message.data.token)
+            case "tokenArrive": {
+                simulateUserInput(textarea, replaceWithDictionary(message.data.token, replaceChars))
                 break
             }
-            case "stop":{
+            case "stop": {
                 document.getElementById("stop").style.display = 'none'
                 document.getElementById("start").style.display = 'block'
                 break
             }
-            case "err":{
-                console.error("Infer fail due to no image!")
-                simulateUserInput(textarea,"no image!")
+            case "err": {
+                console.error(`Infer fail due to ${message?.data?.err}!`)
+                simulateUserInput(textarea, message?.data?.err)
                 document.getElementById("stop").style.display = 'none'
                 document.getElementById("start").style.display = 'block'
                 break
@@ -44,8 +60,11 @@ const handleStart = async (event) => {
     };
     document.getElementById("stop").style.display = 'block'
     document.getElementById("start").style.display = 'none'
+    console.log(window.sl_token)
     await invoke("generate", {
-        ch: channel
+        ch: channel,
+        backend: window.backend,
+        token: window.sl_token,
     })
 }
 
@@ -58,13 +77,25 @@ const handleStop = async (event) => {
     document.getElementById("start").style.display = 'block'
 }
 
-const init = async () => {
+const handleStrip = async (_event) => {
+    let textArea = document.getElementById("txta_input");
+    textArea.value = textArea.value.replace(/\$/g, "").trim()
+
+    const event = new Event('input', {
+        bubbles: true,
+        cancelable: true,
+    });
+    textArea.dispatchEvent(event);
+}
+
+const initInfer = async () => {
     document.getElementById("start").onclick = handleStart
     document.getElementById("stop").onclick = handleStop
+    document.getElementById("strip").onclick = handleStrip
 
     document.getElementById("stop").style.display = 'none'
     document.getElementById("start").style.display = 'block'
 
 }
 
-document.addEventListener("DOMContentLoaded", init)
+document.addEventListener("DOMContentLoaded", initInfer)

@@ -16,6 +16,7 @@ pub mod tray;
 
 pub mod mixtex;
 mod model;
+mod api;
 
 use log::info;
 use std::sync::{Mutex, OnceLock};

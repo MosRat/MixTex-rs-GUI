@@ -18,6 +18,7 @@
     "@tauri-apps/plugin-notification": "~2",
     "@tauri-apps/plugin-os": "~2",
     "@tauri-apps/plugin-shell": "~2",
+    "@tauri-apps/plugin-http": "~2",
     "katex": "^0.16.11",
     "tauri-plugin-log-api": "github:tauri-apps/tauri-plugin-log#v1",
     "vue": "^3.5.13",

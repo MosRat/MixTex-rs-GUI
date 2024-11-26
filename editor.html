@@ -20,16 +20,14 @@
     <script src="/js/common/config.js" id="common_config" data-pagetype="latex"></script>
     <script src="/js/common/common_05.js" id="common_05"></script>
     <script src="/js/common/common_10.js" id="common_10"></script>
-    <script src="/js/tauri/editor.js" id="tauri_js"></script>
-    <script src="/js/tauri/infer.js" id="tauri_js"></script>
+    <script src="/js/tauri/editor.js" id="tauri_js_ed"></script>
+    <script src="/js/tauri/infer.js" id="tauri_js_if"></script>
+    <script src="/js/tauri/backend.js" id="tauri_js_be"></script>
     <link rel="stylesheet" href="/css/custom.css">
-    <script type="text/javascript" src="https://cdn.bootcss.com/mathjax/2.7.3/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
-    <script type="text/x-mathjax-config">
-        MathJax.Hub.Config({
-          showProcessingMessages: false,
-          tex2jax: { inlineMath: [['$','$'],['\\(','\\)']] }
-        });
-    </script>
+    <link rel="stylesheet" href="/lib/katex/katex.min.css" integrity="sha384-nB0miv6/jRmo5UMMR1wu3Gz6NLsoTkbqJghGIsx//Rlm+ZU03BU6SQNC66uf4l5+" crossorigin="anonymous">
+    <script defer src="/lib/katex/katex.min.js" integrity="sha384-7zkQWkzuo3B5mTepMUcHkMB5jZaolc2xDwL6VFqjFALcbeS9Ggm/Yr2r3Dy4lfFg" crossorigin="anonymous"></script>
+    <script defer src="/lib/katex/auto-render.min.js" integrity="sha384-43gviWU0YVjaDtb/GhzOouOXtZMP/7XUzwPTstBeZFe/+rCMvRwr4yROQP43s0Xk" crossorigin="anonymous"
+            onload=""></script>
 </head>
 
 <body>
@@ -39,21 +37,6 @@
 
 
     <!-- #region page -->
-    <div class="container-fluid">
-        <div class="row-fluid">
-            <div class="span12">
-                <div class="btn-group">
-                    <button class="btn" type="button"><em class="icon-align-left"></em></button>
-                    <button class="btn"
-                            type="button"><em class="icon-align-center"></em></button>
-                    <button class="btn" type="button"><em
-                            class="icon-align-right"></em></button>
-                    <button class="btn" type="button"><em
-                            class="icon-align-justify"></em></button>
-                </div>
-            </div>
-        </div>
-    </div>
     <section class="flat-container container-fluid~">
         <div class="flat-row row~">
             <div class="flat-col col-xl-6~">
@@ -70,14 +53,27 @@
                             <div class="form-group" id="wrap_txtainput">
                                 <div class="main-input">
                     <textarea class="form-control twins" id="txta_input"
-                              placeholder="请输入您的LaTeX表达式，按Ctrl+Shift+Q进行截图识别"
+                              placeholder="请输入您的LaTeX表达式，按Shift+X进行截图识别"
                               maxlength="16384"
                               spellcheck="false" wrap="off"></textarea>
                                     <div class="form-control twins" id="div_copy"></div>
                                     <div style="display: flex;">
-                                        <div style="display: flex;margin-right: 2vw;flex-direction: column;align-items: center;justify-content: space-around">
-                                            <button class="btn theme-fill theme-dark-button" style="width: 60px;height: 40px"  id="start">识别</button>
-                                            <button class="btn theme-fill theme-dark-button" style="width: 60px;height: 40px;display: none" id="stop">停止</button>
+                                        <div style="display: flex;margin-right: 2vw;flex-direction: column;align-items: center;justify-content: space-around;">
+                                            <div style="display: flex;flex-direction: column;align-items: center;justify-content: space-between">
+                                                <div style="text-align: center">推理后端：</div>
+                                                <select id="backend" style="width: 150px;height:25px;display: block;">
+                                                    <option value="mixtex">Mixtex</option>
+                                                    <option value="sl">Simple Latex (API)</option>
+                                                    <option value="got">Got Ocr (not implement yet)</option>
+                                                </select>
+                                                <input id="sl_token" type="text" placeholder="simple latex token" style="display: none;width: 150px;height:25px;">
+                                            </div>
+
+                                            <div style="display: flex;justify-content: space-between">
+                                                <button class="btn theme-fill theme-dark-button" style="width: 65px;height: 30px"  id="start">识别</button>
+                                                <button class="btn theme-fill theme-dark-button" style="width: 75px;height: 30px;margin-left: 8px"  id="strip">去除包裹</button>
+                                                <button class="btn theme-fill theme-dark-button" style="width: 50px;height: 30px;display: none" id="stop">停止</button>
+                                            </div>
                                         </div>
                                         <canvas id="screenshot" width="300px" height="100px"
                                                 style="border-radius: 4px;border: 1px rgba(25,25,25,0.1) solid;box-shadow: 2px 4px 20px rgba(25,25,25,0.1);background-color: rgba(175,175,175,0.33)">
@@ -96,11 +92,18 @@
                         <div class="card-header">
                             <h2><i class="fa fa-arrow-circle-down"></i>&nbsp;输出区域<span>Output</span></h2>
                         </div>
-                        <div class="card-body">
-                            <div class="form-group">
-                                <div class="output" id="wrap_output"></div>
+                        <div style="display: flex;flex-direction: row">
+                            <div class="card-body">
+                                <div class="form-group">
+                                    <div class="output" id="wrap_output" style="overflow: hidden;!important;max-width: 40vw!important;background-size: contain"></div>
+                                </div>
+                                <div id="wrap_action"></div>
                             </div>
-                            <div id="wrap_action"></div>
+
+                            <div class="card-body" style="width: 50%;border-left: rgba(0,0,0,0.1) 1px solid">
+                                <div class="form-group" id="katex">
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
