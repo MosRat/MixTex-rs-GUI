@@ -1,9 +1,9 @@
 use crate::window::{config_window, formula_window};
 use anyhow::Result;
 use log::info;
-use tauri::menu::{Menu, MenuEvent, MenuItem, MenuItemKind, PredefinedMenuItem};
+use tauri::menu::{Menu, MenuEvent, MenuItem, PredefinedMenuItem};
 use tauri::tray::{MouseButton, MouseButtonState, TrayIconEvent};
-use tauri::{tray::TrayIconBuilder, AppHandle, EventLoopMessage, Manager};
+use tauri::{tray::TrayIconBuilder, AppHandle, Manager};
 
 pub fn create_tray(app: &AppHandle) -> Result<()> {
     let menu = create_menu(&app)?;
@@ -26,6 +26,8 @@ pub fn create_tray(app: &AppHandle) -> Result<()> {
                     info!("Activate main windows");
                     let _ = window.show();
                     let _ = window.set_focus();
+                } else {
+
                 }
             }
             _ => {

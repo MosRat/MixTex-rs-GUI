@@ -29,7 +29,7 @@ impl MixTexOnnx {
         let hidden_state = encoder_result["last_hidden_state"]
             .try_extract_tensor::<f32>()?
             .to_owned();
-        let mut decode_input_ids = array![[0, 0, 30000_i64]];
+        let decode_input_ids = array![[0, 0, 30000_i64]];
         let k_0 = Array::<f32, _>::zeros((1, 12, 0, 64).f()).into_dyn();
         let k_1 = Array::<f32, _>::zeros((1, 12, 0, 64).f()).into_dyn();
         let k_2 = Array::<f32, _>::zeros((1, 12, 0, 64).f()).into_dyn();
@@ -50,7 +50,7 @@ impl MixTexOnnx {
         }?)?;
 
         let logits = decoder_result["logits"].try_extract_tensor::<f32>()?;
-        let mut next_token_id = logits
+        let next_token_id = logits
             .slice(s![0, -1, ..])
             .iter()
             .enumerate()

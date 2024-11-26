@@ -1,16 +1,15 @@
 use crate::onnx::MixTexOnnx;
 use crate::screenshot::ScreenshotWrapper;
-use crate::vit_image_processor::{preprocess_from_memory, preprocess_from_rgb_array};
+use crate::vit_image_processor::preprocess_from_rgb_array;
 use crate::{api, APP};
 use std::string::ToString;
 
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::{Arc, Mutex};
 use tauri::{Listener, State};
-use tauri_plugin_dialog::DialogExt;
+// use tauri_plugin_dialog::DialogExt;
 
 use anyhow::Result;
-use log::info;
 
 pub trait OcrModel: Sized + Send + Sync {
     fn build() -> Result<Self>;

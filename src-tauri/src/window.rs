@@ -11,11 +11,10 @@
  */
 
 use crate::APP;
-use anyhow::Result;
 use log::{info, warn};
 use tauri::utils::config::WindowEffectsConfig;
 use tauri::utils::WindowEffect;
-use tauri::{Emitter, Manager, Monitor, PhysicalPosition, WebviewWindow, Window, WindowBuilder};
+use tauri::{Emitter, Manager, Monitor, PhysicalPosition, WebviewWindow};
 // Unnecessary in tauri 2.0
 // Get daemon window instance
 // fn get_daemon_window() -> Window {
@@ -165,7 +164,7 @@ pub fn build_formula_window() -> (WebviewWindow, bool) {
         }
         None => {
             info!("Window not existence, Creating new window: {}", "formula");
-            let mut builder = tauri::WebviewWindowBuilder::new(
+            let builder = tauri::WebviewWindowBuilder::new(
                 app_handle,
                 "formula",
                 // tauri::WebviewUrl::External("https://www.latexlive.com/".parse().unwrap()),

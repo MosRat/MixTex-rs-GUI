@@ -9,7 +9,7 @@ use tauri::{AppHandle, Manager};
 use crate::onnx::MixTexOnnx;
 
 pub(crate) async fn setup(app: AppHandle) -> Result<()> {
-    app.get_webview_window("main").unwrap().clear_all_browsing_data()?;
+    // app.get_webview_window("main").unwrap().clear_all_browsing_data()?;
 
 
     let _ = register_hotkey(

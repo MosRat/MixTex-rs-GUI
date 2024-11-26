@@ -19,9 +19,9 @@ mod model;
 mod api;
 
 use log::info;
-use std::sync::{Mutex, OnceLock};
+use std::sync::OnceLock;
 
-use tauri::{AppHandle, Manager, Theme};
+use tauri::{AppHandle, Manager};
 
 use crate::setup::setup;
 use crate::tray::create_tray;
@@ -83,7 +83,15 @@ pub fn run() {
         .build(tauri::generate_context!())
         .expect("error while running tauri application")
         // 保活
-        .run(|_app_handle, event| match event {
+        .run(|app_handle, event| match event {
+            tauri::RunEvent::WindowEvent {label,event, .. } =>{
+                if let tauri::WindowEvent::CloseRequested { api, ..  } =  event {
+                    if label == "main".to_string() {
+                        api.prevent_close();
+                        app_handle.get_webview_window("main").unwrap().hide().unwrap()
+                    }
+                }
+            },
             tauri::RunEvent::ExitRequested { api, code, .. } => {
                 info!("App requested exit");
                 match code {

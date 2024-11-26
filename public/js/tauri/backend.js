@@ -20,6 +20,7 @@ const initBackend = async ()=>{
     backendSelect.addEventListener("blur",async ()=>{
         console.log("blur!")
         localStorage.setItem("sl_token",slTokenInput.value)
+        window.sl_token = slTokenInput.value
         console.log(slTokenInput.value)
     })
 }

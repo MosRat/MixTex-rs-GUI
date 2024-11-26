@@ -9,18 +9,15 @@
  */
 use log::{info, warn};
 // use image::{ExtendedColorType, GenericImageView, ImageEncoder, RgbaImage};
-use crate::window::{build_formula_window, build_window, formula_window, get_current_monitor};
+use crate::window::get_current_monitor;
 use crate::APP;
 use serde::{Deserialize, Serialize};
 use serde_json::json;
-use std::fs;
-use std::fs::OpenOptions;
-use std::io::Cursor;
 use std::sync::Mutex;
 use std::time::Instant;
 use tauri::{AppHandle, Emitter, Listener, Manager, PhysicalPosition, State};
 use xcap::{
-    image::{ExtendedColorType, GenericImageView, ImageEncoder, RgbaImage},
+    image::GenericImageView,
     Monitor,
 };
 // use crate::api::simple_latex;
