@@ -7,7 +7,8 @@
 ![Platform](https://img.shields.io/badge/platform-Windows%20|%20Mac%20|%20Linux-orange)
 
 
-> [!tip] 更新：
+> [!tip]
+> v0.5.0 更新：
 > - 使用Tauri v2的channel和stream，加速推理和截图
 > - 改进UI，使用[LatexLive](https://github.com/MosRat/LaTeXLive)的开源版本作为编辑器
 
