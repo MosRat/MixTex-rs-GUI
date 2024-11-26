@@ -1,12 +1,23 @@
 # MixTex-rs GUI
 
+[![License](https://img.shields.io/badge/license-GPLv3-blue)](https://www.gnu.org/licenses/gpl-3.0)
+[![Tauri](https://img.shields.io/badge/Tauri-2.1.0-red?logo=tauri)]()
+[![Vue.js](https://img.shields.io/badge/vue.js-v3-green?logo=vue.js)](https://github.com/vuejs/vue-next)
+[![Rust](https://img.shields.io/badge/-Rust-orange?logo=rust&logoColor=white)](https://www.rust-lang.org/)
+![Platform](https://img.shields.io/badge/platform-Windows%20|%20Mac%20|%20Linux-orange)
+
+
+> [!tip] 更新：
+> - 使用Tauri v2的channel和stream，加速推理和截图
+> - 改进UI，使用[LatexLive](https://github.com/MosRat/LaTeXLive)的开源版本作为编辑器
+
 A GUI implement of [MixTex](https://github.com/RQLuo/MixTeX-Latex-OCR/tree/MixTeX-v1.1.2), use [Rust](https://www.rust-lang.org/) + [Vue](https://github.com/vuejs/) + [Tauri](https://github.com/tauri-apps/tauri)
 
 
 ##  Setup and Usage
 
 - Download installer for your system from [Release](https://github.com/MosRat/MixTex-rs-GUI/releases/latest), or single exe (Windows only)
-- Use `Shift + X` or `Ctrl + Alt + F12` to screenshot latex. (can be changed in future version)
+- Use `Shift + X`  to screenshot latex. (can be changed in future version)
 - Or drag png/jp(e)g image into app
 - Or click `Select` to choose one from filesystem.
 

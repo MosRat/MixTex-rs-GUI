@@ -42,12 +42,12 @@ pub fn create_tray(app: &AppHandle) -> Result<()> {
 pub fn create_menu<R: tauri::Runtime>(app: &AppHandle<R>) -> Result<Menu<R>> {
     let menu = Menu::new(app)?;
     let quit_i = MenuItem::with_id(app, "quit", "Quit", true, None::<&str>)?;
-    let config_i = MenuItem::with_id(app, "config", "Config", true, None::<&str>)?;
+    // let config_i = MenuItem::with_id(app, "config", "Config", true, None::<&str>)?;
     let formula_i = MenuItem::with_id(app, "formula", "Latex formula editor", true, None::<&str>)?;
 
     menu.append_items(&[
         &formula_i,
-        &config_i,
+        // &config_i,
         &PredefinedMenuItem::separator(app)?,
         &quit_i,
     ])?;

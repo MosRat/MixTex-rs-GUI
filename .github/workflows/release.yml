@@ -20,7 +20,7 @@ jobs:
           - platform: 'macos-latest' # for Intel based macs.
             args: '--target x86_64-apple-darwin'
             libs: 'x86-64-mac'
-          - platform: 'ubuntu-20.04' # for Tauri v1 you could replace this with ubuntu-20.04.
+          - platform: 'ubuntu-22.04' # for Tauri v1 you could replace this with ubuntu-20.04.
             args: ''
             libs: 'x86-64-linux'
           - platform: 'windows-latest'
