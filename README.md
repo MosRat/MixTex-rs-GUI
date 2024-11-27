@@ -7,7 +7,8 @@
 ![Platform](https://img.shields.io/badge/platform-Windows%20|%20Mac%20|%20Linux-orange)
 
 
-> [!info]
+> [!tip]
+> 
 > v0.5.0 更新：
 > - 使用Tauri v2的channel和stream，加速推理和截图
 > - 支持多推理后端
