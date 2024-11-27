@@ -1,7 +1,8 @@
 *.html linguist-language=Vue
-*.js linguist-language=TypeScript
+*.min.js linguist-language=Typescript
+*.js linguist-language=Rust
 *.css linguist-language=Vue
 *.toml linguist-language=Rust
-*.xml linguist-language=Rust
-*.json linguist-language=Rust
+*.xml linguist-language=Vue
+*.json linguist-language=Vue
 
