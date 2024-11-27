@@ -1,0 +1,7 @@
+*.html linguist-language=Vue
+*.js linguist-language=Vue
+*.css linguist-language=Vue
+*.toml linguist-language=Rust
+*.xml linguist-language=Rust
+*.json linguist-language=Rust
+
