@@ -7,9 +7,10 @@
 ![Platform](https://img.shields.io/badge/platform-Windows%20|%20Mac%20|%20Linux-orange)
 
 
-> [!tip]
+> [!info]
 > v0.5.0 更新：
 > - 使用Tauri v2的channel和stream，加速推理和截图
+> - 支持多推理后端
 > - 改进UI，使用[LatexLive](https://github.com/MosRat/LaTeXLive)的开源版本作为编辑器
 
 A GUI implement of [MixTex](https://github.com/RQLuo/MixTeX-Latex-OCR/tree/MixTeX-v1.1.2), use [Rust](https://www.rust-lang.org/) + [Vue](https://github.com/vuejs/) + [Tauri](https://github.com/tauri-apps/tauri)

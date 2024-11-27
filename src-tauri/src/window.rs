@@ -176,7 +176,7 @@ pub fn build_formula_window() -> (WebviewWindow, bool) {
             // .initialization_script(include_str!("../scripts/formula_editor.js"))
             .disable_drag_drop_handler()
             .title("Latex Formula Editor")
-            .transparent(true)
+            // .transparent(true) # for macos
             .min_inner_size(800f64, 200f64)
             .inner_size(800f64, 600f64)
             .visible(false);

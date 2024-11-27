@@ -4,6 +4,13 @@ dist/
 *.lib
 *.onnx
 models/tokenizer/tokenizer.json
+js/latex
+js/login
+js/personal
+js/messageboard
+js/readme
+js/update
+
 
 # Logs
 logs
