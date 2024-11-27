@@ -3,7 +3,10 @@ name = "mixtex-rs-gui"
 version = "0.2.2"
 description = "Mixtex gui app"
 authors = ["MosRat"]
+license = "GPL-3.0-only"
 edition = "2021"
+build = "build.rs"
+repository = "https://github.com/MosRat/MixTex-rs-GUI.git"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
@@ -17,9 +20,13 @@ tauri-build = { version = "2", features = [] }
 
 [dependencies]
 tauri = { version = "2", features = ["protocol-asset", "devtools", "tray-icon", "unstable"] }
-tauri-plugin-autostart = { version = "2" }
 tauri-plugin-log = { version = "2" }
 tauri-plugin-notification = "2"
+tauri-plugin-dialog = "2"
+tauri-plugin-fs = "2"
+tauri-plugin-shell = "2"
+tauri-plugin-os = "2"
+tauri-plugin-http = { version =  "2" ,features = ["multipart"] }
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 
@@ -31,11 +38,7 @@ xcap = {version = "0.0.14" }
 log = "0.4.22"
 tokio = "1.41.1"
 anyhow = "1.0.93"
-tauri-plugin-dialog = "2"
-tauri-plugin-fs = "2"
-tauri-plugin-shell = "2"
-tauri-plugin-os = "2"
-tauri-plugin-http = { version =  "2" ,features = ["multipart"] }
+
 
 
 
@@ -48,7 +51,7 @@ features = ["Win32_Foundation", "Foundation", "Foundation_Collections", "AI", "A
 
 [target.'cfg(not(any(target_os = "android", target_os = "ios")))'.dependencies]
 tauri-plugin-global-shortcut = "2"
-tauri-plugin-clipboard = { git = "https://github.com/CrossCopy/tauri-plugin-clipboard", branch = "v2" }
+#tauri-plugin-clipboard = { git = "https://github.com/CrossCopy/tauri-plugin-clipboard", branch = "v2" }
 tauri-plugin-single-instance = { version = "2" }
 #None
 
