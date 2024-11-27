@@ -60,7 +60,7 @@ pub fn run() {
                 .level(log::LevelFilter::Info)
                 .build(),
         )
-        .plugin(tauri_plugin_clipboard::init())
+        // .plugin(tauri_plugin_clipboard::init())
         .plugin(tauri_plugin_global_shortcut::Builder::new().build())
         .setup(|app| {
             // global app handle
