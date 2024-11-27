@@ -1,5 +1,5 @@
 *.html linguist-language=Vue
-*.js linguist-language=Vue
+*.js linguist-language=TypeScript
 *.css linguist-language=Vue
 *.toml linguist-language=Rust
 *.xml linguist-language=Rust
