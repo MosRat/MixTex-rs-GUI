@@ -7,11 +7,11 @@
  * Author: MosRat (work@whl.moe)
  * Description:
  */
-use std::io::Cursor;
-use image::{ImageBuffer, Rgba, ImageFormat};
 use anyhow::{anyhow, Result};
+use image::{ImageBuffer, ImageFormat, Rgba};
 use serde_json::Value;
-use tauri_plugin_http::reqwest::{Client, multipart, header::HeaderMap};
+use std::io::Cursor;
+use tauri_plugin_http::reqwest::{header::HeaderMap, multipart, Client};
 
 pub fn encode_rgba_to_png(rgba_data: &[u8], width: u32, height: u32) -> Result<Vec<u8>> {
     // 检查输入数据长度是否匹配宽高
@@ -33,43 +33,43 @@ pub fn encode_rgba_to_png(rgba_data: &[u8], width: u32, height: u32) -> Result<V
     Ok(buffer)
 }
 
-
-
-pub async fn simple_latex(img: Vec<u8>,token:&str) -> Result<String, String> {
+pub async fn simple_latex(img: Vec<u8>, token: &str) -> Result<String, String> {
     let client = Client::builder()
         .no_proxy()
-        .build().map_err(|e| e.to_string())?;
+        .build()
+        .map_err(|e| e.to_string())?;
 
     let mut headers = HeaderMap::new();
     headers.insert("token", token.parse().unwrap());
 
-    let part = multipart::Part::bytes(img)
-        .file_name("file.png");
-    let form = multipart::Form::new()
-        .part("file", part)
-        ;
+    let part = multipart::Part::bytes(img).file_name("file.png");
+    let form = multipart::Form::new().part("file", part);
 
     let res: Value = client
         .post("https://server.simpletex.cn/api/latex_ocr/v2")
         .headers(headers)
         .multipart(form)
         .send()
-        .await.map_err(|e| e.to_string())?
+        .await
+        .map_err(|e| e.to_string())?
         .json()
-        .await.map_err(|e| e.to_string())?;
-    if res.get("status")
+        .await
+        .map_err(|e| e.to_string())?;
+    if res
+        .get("status")
         .ok_or("cant get json value!")?
         .as_bool()
-        .ok_or("cant get json value!")? == true {
-        Ok(
-            res.get("res")
-                .ok_or("cant get json value!")?
-                .get("latex")
-                .ok_or("cant get json value!")?
-                .as_str()
-                .ok_or("cant get json value!")?
-                .to_string()
-        )
+        .ok_or("cant get json value!")?
+        == true
+    {
+        Ok(res
+            .get("res")
+            .ok_or("cant get json value!")?
+            .get("latex")
+            .ok_or("cant get json value!")?
+            .as_str()
+            .ok_or("cant get json value!")?
+            .to_string())
     } else {
         Err(format!("Fail to {:}", res))
     }
@@ -85,4 +85,3 @@ mod tests {
         println!("{:}", simple_latex(img).await.unwrap());
     }
 }
-

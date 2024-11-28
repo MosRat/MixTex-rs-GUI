@@ -15,11 +15,8 @@ use serde::{Deserialize, Serialize};
 use serde_json::json;
 use std::sync::Mutex;
 use std::time::Instant;
-use tauri::{AppHandle, Emitter, Listener, Manager, PhysicalPosition, State};
-use xcap::{
-    image::GenericImageView,
-    Monitor,
-};
+use tauri::{AppHandle, Emitter, Listener, Manager, PhysicalPosition, State, WebviewWindow};
+use xcap::{image::GenericImageView, Monitor};
 // use crate::api::simple_latex;
 
 pub struct ScreenshotWrapper(Mutex<(Vec<u8>, u32, u32)>);
@@ -84,12 +81,11 @@ pub fn screenshot(handle: AppHandle) -> tauri::ipc::Response {
         let img = img
             .view(size.left, size.top, size.width, size.height)
             .to_image();
-        let state =  handle.state::<ScreenshotWrapper>();
+        let state = handle.state::<ScreenshotWrapper>();
         state.set_data(img.as_raw());
-        state.set_wh(img.width(),img.height());
+        state.set_wh(img.width(), img.height());
         let (w, h) = img.dimensions();
-        window.emit("image_arrive",
-                    json!({"w":w,"h":h})).unwrap();
+        window.emit("image_arrive", json!({"w":w,"h":h})).unwrap();
 
         // tauri::async_runtime::spawn(async move {
         //     let (w, h) = img.dimensions();
@@ -142,4 +138,24 @@ pub fn screenshot(handle: AppHandle) -> tauri::ipc::Response {
 #[tauri::command(async)]
 pub fn get_screenshot(screenshot_wrapper: State<ScreenshotWrapper>) -> tauri::ipc::Response {
     tauri::ipc::Response::new(screenshot_wrapper.get_data())
+}
+
+#[tauri::command(async)]
+pub fn set_screenshot(request: tauri::ipc::Request,screenshot_wrapper: State<ScreenshotWrapper>,window:WebviewWindow) -> Result<(),String> {
+    let tauri::ipc::InvokeBody::Raw(upload_data) = request.body() else {
+        return Err("Error::RequestBodyMustBeRaw".to_string());
+    };
+    let img = image::load_from_memory(&upload_data)
+        .map_err(|e| e.to_string())?
+        .to_rgba8()
+        ;
+    let (w,h )=img.dimensions();
+
+    screenshot_wrapper.set_wh(w,h);
+    screenshot_wrapper.set_data(&img.as_raw());
+
+    window.emit("image_arrive",json!({"w":w,"h":h})).unwrap();
+
+
+    Ok(())
 }

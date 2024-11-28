@@ -73,8 +73,7 @@ pub fn build_window(label: &str, title: &str) -> (WebviewWindow, bool) {
             )
             .enable_clipboard_access()
             .title(title)
-            .visible(false)
-                ;
+            .visible(false);
 
             #[cfg(target_os = "macos")]
             {

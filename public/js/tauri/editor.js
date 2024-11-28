@@ -8,6 +8,22 @@
  * Description:
  */
 
+function processClipboardImage(items) {
+    const tauri = window.__TAURI__
+    const {invoke} = tauri.core
+    for (let i = 0; i < items.length; i++) {
+        const blob = items[i].getAsFile();
+        if (blob && (blob.type === "image/png" || blob.type === "image/jpeg")) {
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                const arrayBuffer = event.target.result;
+                const uint8Array = new Uint8Array(arrayBuffer);
+                invoke('set_screenshot', uint8Array);
+            };
+            reader.readAsArrayBuffer(blob);
+        }
+    }
+}
 
 
 
@@ -67,6 +83,15 @@ const initTauri = async () => {
 const onLoad = async () => {
     console.log(window.location.href, "load scripts")
     await initTauri()
+
+    document.addEventListener('paste', function(event) {
+        const items = event.clipboardData.items;
+        console.log(event)
+        processClipboardImage(items);
+    });
+
+
+
 }
 
 document.addEventListener('DOMContentLoaded', onLoad)

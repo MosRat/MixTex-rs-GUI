@@ -145,13 +145,9 @@ pub fn preprocess_from_image(img: DynamicImage) -> Result<Vec<f32>, String> {
 }
 
 pub fn preprocess_from_rgb_array(img: &[u8], w: u32, h: u32) -> Result<Vec<f32>, String> {
-    let img = rescale_and_normalize(
-        resize(
-            DynamicImage::from(
-                image::RgbaImage::from_raw(w, h, img.into()).ok_or("Read image fail!")?
-            )
-        )
-    );
+    let img = rescale_and_normalize(resize(DynamicImage::from(
+        image::RgbaImage::from_raw(w, h, img.into()).ok_or("Read image fail!")?,
+    )));
 
     let mut res = vec![0.0f32; (3 * CONFIG.width * CONFIG.height) as usize];
 

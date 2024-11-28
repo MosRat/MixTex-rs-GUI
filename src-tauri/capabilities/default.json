@@ -13,7 +13,6 @@
       "https://*"
     ]
   },
-
   "permissions": [
     "core:window:allow-set-decorations",
     "fs:allow-read-file",
@@ -94,6 +93,12 @@
           "url": "https://**"
         }
       ]
-    }
+    },
+    "core:event:default",
+    "core:webview:default",
+    "core:window:default",
+    "core:tray:default",
+    "clipboard-manager:default",
+    "dialog:default"
   ]
 }

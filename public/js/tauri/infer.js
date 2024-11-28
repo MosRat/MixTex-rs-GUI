@@ -6,7 +6,6 @@ const replaceChars = {
 }
 
 function replaceWithDictionary(input, dictionary) {
-    console.log(input)
     let output = input;
     for (const [key, value] of Object.entries(dictionary)) {
         // const regex = new RegExp(key, 'g');

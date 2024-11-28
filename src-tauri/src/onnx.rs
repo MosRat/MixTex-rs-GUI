@@ -6,8 +6,8 @@ use std::str::FromStr;
 use tokenizers::Tokenizer;
 
 use crate::mixtex::{check_repeat, OcrModel};
-use anyhow::Result;
 use crate::model::{DECODER_BYTES, ENCODER_BYTES, TOKENIZER_STR};
+use anyhow::Result;
 
 const MAX_LENGTH: usize = 512;
 const STOP_TOKEN_IDX: usize = 30000;
@@ -18,11 +18,7 @@ pub struct MixTexOnnx {
 }
 
 impl MixTexOnnx {
-    fn prefill(
-        &self,
-        img: &[f32],
-    ) -> Result<(usize, Array<f32, IxDyn>, SessionOutputs)>
-    {
+    fn prefill(&self, img: &[f32]) -> Result<(usize, Array<f32, IxDyn>, SessionOutputs)> {
         let encoder_result = self
             .encoder_session
             .run(ort::inputs! {"pixel_values" => ([1,3,448,448],img)}?)?;
@@ -64,9 +60,7 @@ impl MixTexOnnx {
     fn decode_once<'a>(
         &'a self,
         state: (usize, Array<f32, IxDyn>, SessionOutputs<'a, 'a>),
-    ) -> Result<
-        (usize, Array<f32, IxDyn>, SessionOutputs<'a, 'a>),
-    > {
+    ) -> Result<(usize, Array<f32, IxDyn>, SessionOutputs<'a, 'a>)> {
         let (mut next_token_id, hidden_state, mut decoder_result) = state;
         decoder_result = self.decoder_session.run(ort::inputs! {
         "encoder_hidden_states" => hidden_state.view(),
@@ -176,11 +170,7 @@ impl OcrModel for MixTexOnnx {
 
         Ok(self.tokenizer.decode(&result_idx, true).unwrap())
     }
-    fn generate<F>(
-        &self,
-        img: &[f32],
-        mut callback: F,
-    ) -> Result<String>
+    fn generate<F>(&self, img: &[f32], mut callback: F) -> Result<String>
     where
         F: FnMut(String) -> bool,
     {
@@ -200,7 +190,10 @@ impl OcrModel for MixTexOnnx {
         for i in 1..MAX_LENGTH {
             (next_token_id, hidden_state, decoder_result) =
                 self.decode_once((next_token_id, hidden_state, decoder_result))?;
-            let res = self.tokenizer.decode(&[next_token_id as u32], true).unwrap();
+            let res = self
+                .tokenizer
+                .decode(&[next_token_id as u32], true)
+                .unwrap();
             result_idx[i] = next_token_id as u32;
             result_string += &res;
             if callback(res) {

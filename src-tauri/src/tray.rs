@@ -27,7 +27,6 @@ pub fn create_tray(app: &AppHandle) -> Result<()> {
                     let _ = window.show();
                     let _ = window.set_focus();
                 } else {
-
                 }
             }
             _ => {

@@ -1,6 +1,5 @@
 #![allow(non_snake_case)]
 
-
 pub mod setup;
 pub mod vit_image_processor;
 // pub mod winml;
@@ -14,28 +13,28 @@ pub mod window;
 
 pub mod tray;
 
+mod api;
 pub mod mixtex;
 mod model;
-mod api;
 
 use log::info;
 use std::sync::OnceLock;
 
 use tauri::{AppHandle, Manager};
 
+use crate::mixtex::generate;
+use crate::screenshot::{get_screenshot, screenshot,set_screenshot};
 use crate::setup::setup;
 use crate::tray::create_tray;
 use tauri_plugin_log::{Target, TargetKind};
 use tauri_plugin_notification::NotificationExt;
-use crate::screenshot::{get_screenshot, screenshot};
-use crate::mixtex::generate;
 
 pub static APP: OnceLock<AppHandle> = OnceLock::new();
-
 
 // #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
+        .plugin(tauri_plugin_clipboard_manager::init())
         .plugin(tauri_plugin_os::init())
         .plugin(tauri_plugin_shell::init())
         .plugin(tauri_plugin_fs::init())
@@ -78,20 +77,29 @@ pub fn run() {
 
             Ok(())
         })
-        .invoke_handler(tauri::generate_handler![screenshot,generate,get_screenshot])
+        .invoke_handler(tauri::generate_handler![
+            screenshot,
+            generate,
+            get_screenshot,
+            set_screenshot,
+        ])
         // .on_system_tray_event(tray_event_handler)
         .build(tauri::generate_context!())
         .expect("error while running tauri application")
         // 保活
         .run(|app_handle, event| match event {
-            tauri::RunEvent::WindowEvent {label,event, .. } =>{
-                if let tauri::WindowEvent::CloseRequested { api, ..  } =  event {
+            tauri::RunEvent::WindowEvent { label, event, .. } => {
+                if let tauri::WindowEvent::CloseRequested { api, .. } = event {
                     if label == "main".to_string() {
                         api.prevent_close();
-                        app_handle.get_webview_window("main").unwrap().hide().unwrap()
+                        app_handle
+                            .get_webview_window("main")
+                            .unwrap()
+                            .hide()
+                            .unwrap()
                     }
                 }
-            },
+            }
             tauri::RunEvent::ExitRequested { api, code, .. } => {
                 info!("App requested exit");
                 match code {
