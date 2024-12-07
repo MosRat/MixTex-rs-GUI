@@ -30,7 +30,7 @@ pub(crate) async fn setup(app: AppHandle) -> Result<()> {
                 _ => {}
             }
         },
-        "Shift+X",
+        "Alt+X",
     )
     .inspect_err(|e| warn!("{e}"));
 
