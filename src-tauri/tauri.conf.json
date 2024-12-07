@@ -38,7 +38,7 @@
   },
   "productName": "mixtex-rs-gui",
   "mainBinaryName": "mixtex-rs-gui",
-  "version": "0.5.0",
+  "version": "0.5.1",
   "identifier": "com.mosrat.mixtex-rs-gui",
   "plugins": {},
   "app": {
@@ -74,8 +74,8 @@
         ],
         "enable": true
       },
-      "devCsp": "default-src * data: ; img-src * 'self' asset: https: data: ; style-src * 'unsafe-inline'; worker-src 'self' blob: ; script-src * 'unsafe-eval';",
-      "csp": "default-src * data: ; img-src * 'self' asset: https: data: ; style-src * 'unsafe-inline'; worker-src 'self' blob: ; script-src * 'unsafe-eval';",
+      "devCsp": "default-src * data: ; img-src * 'self' asset: https: data: ; style-src * 'unsafe-inline'; worker-src 'self' blob: ; script-src * 'unsafe-eval' 'unsafe-inline';",
+      "csp": "default-src * data: ; img-src * 'self' asset: https: data: ; style-src * 'unsafe-inline'; worker-src 'self' blob: ; script-src * 'unsafe-eval' 'unsafe-inline';",
       "capabilities": [
         "default"
       ]
