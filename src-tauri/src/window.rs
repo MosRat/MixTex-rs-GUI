@@ -65,12 +65,17 @@ pub fn build_window(label: &str, title: &str) -> (WebviewWindow, bool) {
             (v, true)
         }
         None => {
+
+            let current_monitor = get_current_monitor();
+            let position = current_monitor.position();
+            
             info!("Window not existence, Creating new window: {}", label);
             let mut builder = tauri::WebviewWindowBuilder::new(
                 app_handle,
                 label,
                 tauri::WebviewUrl::App("index.html".into()),
             )
+            .position(position.x.into(), position.y.into())
             .enable_clipboard_access()
             .title(title)
             .visible(false);
