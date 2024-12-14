@@ -20,9 +20,9 @@ A GUI implement of [MixTex](https://github.com/RQLuo/MixTeX-Latex-OCR/tree/MixTe
 ##  Setup and Usage
 
 - Download installer for your system from [Release](https://github.com/MosRat/MixTex-rs-GUI/releases/latest), or single exe (Windows only)
-- Use `Shift + X`  to screenshot latex. (can be changed in future version)
+- Use `Alt + X`  to screenshot latex. (can be changed in future version)
 - Or drag png/jp(e)g image into app
-- Or click `Select` to choose one from filesystem.
+- Or click image canvas to choose one from filesystem.
 
 ![result_3dview2.gif](docs%2Fgif%2Fresult_3dview2.gif)
 

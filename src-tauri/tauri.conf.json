@@ -57,6 +57,7 @@
         "shadow": true,
         "focus": true,
         "dragDropEnabled": true,
+        "theme": "Light",
         "windowEffects": {
           "effects": [
             "tabbedLight",

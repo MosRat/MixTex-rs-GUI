@@ -9,6 +9,7 @@
  */
 use log::{info, warn};
 // use image::{ExtendedColorType, GenericImageView, ImageEncoder, RgbaImage};
+use crate::error::raise_error_dialog;
 use crate::window::get_current_monitor;
 use crate::APP;
 use serde::{Deserialize, Serialize};
@@ -60,6 +61,7 @@ pub fn screenshot(handle: AppHandle) -> tauri::ipc::Response {
     let screen = Monitor::from_point(x, y)
         .inspect_err(|e| {
             warn!("{e:?}");
+            raise_error_dialog(&e.to_string());
         })
         .unwrap();
 
@@ -68,9 +70,10 @@ pub fn screenshot(handle: AppHandle) -> tauri::ipc::Response {
         .map_err(|e| e.to_string())
         .inspect_err(|e| {
             warn!("{e:?}");
+            raise_error_dialog(&e);
         })
         .unwrap();
-    info!("{:?}", s.elapsed());
+    info!("screen captrue time cost:{:?}", s.elapsed());
     let buf = img.as_raw().clone();
 
     let window = handle.get_webview_window("screenshot").unwrap();
@@ -119,7 +122,7 @@ pub fn screenshot(handle: AppHandle) -> tauri::ipc::Response {
         //             });
         //     }
         // });
-        info!("Receive from js:{:?}", size);
+        info!("Receive crop area from js :{:?}", size);
 
         // let (w, _) = build_window("main", "fast writer");
         // w.set_resizable(false).unwrap();
@@ -128,10 +131,12 @@ pub fn screenshot(handle: AppHandle) -> tauri::ipc::Response {
             .unwrap()
             .emit("success_save", "")
             .unwrap();
-        info!("emit to js!");
+        info!("emit success to js!");
+        let _ = handle.get_webview_window("main").unwrap().show();
+        let _ = handle.get_webview_window("main").unwrap().set_focus();
     });
 
-    info!("return js! {:?}", s.elapsed());
+    info!("return img to js!Total time cost: {:?}", s.elapsed());
     tauri::ipc::Response::new(buf)
 }
 
@@ -141,21 +146,23 @@ pub fn get_screenshot(screenshot_wrapper: State<ScreenshotWrapper>) -> tauri::ip
 }
 
 #[tauri::command(async)]
-pub fn set_screenshot(request: tauri::ipc::Request,screenshot_wrapper: State<ScreenshotWrapper>,window:WebviewWindow) -> Result<(),String> {
+pub fn set_screenshot(
+    request: tauri::ipc::Request,
+    screenshot_wrapper: State<ScreenshotWrapper>,
+    window: WebviewWindow,
+) -> Result<(), String> {
     let tauri::ipc::InvokeBody::Raw(upload_data) = request.body() else {
         return Err("Error::RequestBodyMustBeRaw".to_string());
     };
     let img = image::load_from_memory(&upload_data)
         .map_err(|e| e.to_string())?
-        .to_rgba8()
-        ;
-    let (w,h )=img.dimensions();
+        .to_rgba8();
+    let (w, h) = img.dimensions();
 
-    screenshot_wrapper.set_wh(w,h);
+    screenshot_wrapper.set_wh(w, h);
     screenshot_wrapper.set_data(&img.as_raw());
 
-    window.emit("image_arrive",json!({"w":w,"h":h})).unwrap();
-
+    window.emit("image_arrive", json!({"w":w,"h":h})).unwrap();
 
     Ok(())
 }

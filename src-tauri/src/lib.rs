@@ -16,8 +16,9 @@ pub mod tray;
 mod api;
 pub mod mixtex;
 mod model;
+mod error;
 
-use log::info;
+use log::{info, warn};
 use std::sync::OnceLock;
 
 use tauri::{AppHandle, Manager};
@@ -45,9 +46,15 @@ pub fn run() {
                 .builder()
                 .title("The program is already running. Please do not start it again!")
                 .body(cwd)
-                .icon("pot")
                 .show()
                 .unwrap();
+            if let Some(window) = app.get_webview_window("main") {
+                info!("Activate main windows");
+                let _ = window.show();
+                let _ = window.set_focus();
+            } else {
+                warn!("cant found main window!");
+            }
         }))
         .plugin(
             tauri_plugin_log::Builder::new()

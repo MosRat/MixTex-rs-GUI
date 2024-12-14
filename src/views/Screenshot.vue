@@ -13,7 +13,7 @@ import {onMounted, ref} from 'vue';
 import {invoke} from '@tauri-apps/api/core';
 import {info, warn} from "@tauri-apps/plugin-log";
 import {getCurrentWebviewWindow} from "@tauri-apps/api/webviewWindow";
-import {currentMonitor, Monitor} from '@tauri-apps/api/window';
+import {currentMonitor, Monitor, UserAttentionType} from '@tauri-apps/api/window';
 
 info(">>>>>>>>>>>>>Vue setup>>>>>>>>>>>>")
 
@@ -37,7 +37,7 @@ info(`${screen}`)
 
 
 onMounted(async () => {
-  info(">>>>>>>>>>>>>Cmd Invoke!>>>>>>>>>>>>")
+  info(">>>>>>>>>>>>>Screenshot window mount!>>>>>>>>>>>>")
 
   await appWindow.listen<void>("activate", async () => {
     invoke<ArrayBuffer>('screenshot', {}).then(
@@ -94,6 +94,8 @@ onMounted(async () => {
 
 const onImageLoad = async () => {
   await appWindow.show();
+  await appWindow.requestUserAttention(UserAttentionType.Critical)
+  await appWindow.setAlwaysOnTop(true);
   await appWindow.setFocus();
   await info!(">>>>>>>>>>>>>>>>>>>>>>>>>>Window show!>>>>>>>>>>>>>>>>>>>>>");
 };

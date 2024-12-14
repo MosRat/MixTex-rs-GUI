@@ -1,3 +1,4 @@
+use std::ops::{Deref, DerefMut};
 use crate::onnx::MixTexOnnx;
 use crate::screenshot::ScreenshotWrapper;
 use crate::vit_image_processor::preprocess_from_rgb_array;
@@ -5,7 +6,7 @@ use crate::{api, APP};
 use std::string::ToString;
 
 use std::sync::atomic::{AtomicBool, Ordering};
-use std::sync::{Arc, Mutex};
+use std::sync::{Arc, Mutex, MutexGuard};
 use tauri::{Listener, State};
 // use tauri_plugin_dialog::DialogExt;
 
@@ -22,6 +23,22 @@ pub trait OcrModel: Sized + Send + Sync {
 pub struct Model<M: OcrModel = MixTexOnnx> {
     model: Mutex<M>,
 }
+
+impl<M: OcrModel> Deref for Model<M> {
+    type Target = Mutex<M>;
+
+    fn deref(&self) -> &Self::Target {
+        &self.model
+    }
+}
+
+impl<M: OcrModel> DerefMut for Model<M> {
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        &mut self.model
+    }
+}
+
+
 
 impl<M: OcrModel> Model<M> {
     pub fn new() -> Model<M> {

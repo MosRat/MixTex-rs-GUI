@@ -15,6 +15,7 @@ use log::{info, warn};
 use tauri::utils::config::WindowEffectsConfig;
 use tauri::utils::WindowEffect;
 use tauri::{Emitter, Manager, Monitor, PhysicalPosition, WebviewWindow};
+use crate::error::raise_error_dialog;
 // Unnecessary in tauri 2.0
 // Get daemon window instance
 // fn get_daemon_window() -> Window {
@@ -44,12 +45,14 @@ pub fn get_current_monitor() -> Monitor {
         Ok(PhysicalPosition { x, y }) => match app.monitor_from_point(x, y) {
             Ok(Some(m)) => m,
             _ => {
-                warn!("Fail get monitor!");
+                warn!("Fail get monitor from {x} {y}!");
+                raise_error_dialog(&format!("Fail get monitor from {x} {y}!"));
                 app.primary_monitor().unwrap().unwrap()
             }
         },
         Err(e) => {
-            warn!("Fail to get cursor {e:?}");
+            warn!("Fail to get cursor due to {e:?}");
+            raise_error_dialog(&format!("Fail to get cursor due to {e:?}"));
             app.primary_monitor().unwrap().unwrap()
         }
     }
@@ -151,7 +154,7 @@ pub fn build_screenshot_window() -> WebviewWindow {
 pub fn screenshot_window() -> WebviewWindow {
     let window = APP.get().unwrap().get_webview_window("screenshot").unwrap();
 
-    info!(">>>>>>>>>>>>>>>>>>>>Windows Return!>>>>>>>>>>>>>>>>");
+    info!(">>>>>>>>>>>>>>>>>>>>WebviewWindow Got!>>>>>>>>>>>>>>>>");
 
     window.emit("activate", "").unwrap();
 
