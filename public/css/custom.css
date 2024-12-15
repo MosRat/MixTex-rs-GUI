@@ -1,5 +1,5 @@
 /*尝试注入*/
-html, body {
+body {
     background-color: rgba(255, 255, 255, 0) !important; /* 设置背景透明 */
     margin: 0;
     height: initial !important;

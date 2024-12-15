@@ -15,7 +15,7 @@ function processClipboardImage(items) {
         const blob = items[i].getAsFile();
         if (blob && (blob.type === "image/png" || blob.type === "image/jpeg")) {
             const reader = new FileReader();
-            reader.onload = function(event) {
+            reader.onload = function (event) {
                 const arrayBuffer = event.target.result;
                 const uint8Array = new Uint8Array(arrayBuffer);
                 invoke('set_screenshot', uint8Array);
@@ -24,8 +24,6 @@ function processClipboardImage(items) {
         }
     }
 }
-
-
 
 
 const initTauri = async () => {
@@ -51,7 +49,7 @@ const initTauri = async () => {
     await listen('image_arrive', async event => {
         const {w, h} = event.payload
         await getCurrentWindow().setFocus()
-        console.log("image_arrive",w, h)
+        console.log("image_arrive", w, h)
 
         const f = Math.max(w / displayWidth, h / displayHeight)
 
@@ -84,12 +82,13 @@ const onLoad = async () => {
     console.log(window.location.href, "load scripts")
     await initTauri()
 
-    document.addEventListener('paste', function(event) {
+    document.addEventListener('paste', function (event) {
         const items = event.clipboardData.items;
         console.log(event)
         processClipboardImage(items);
     });
 
+    document.getElementById("img-canvas").onclick = () => window.__TAURI__.window.getCurrentWindow().emit('select_img')
 
 
 }

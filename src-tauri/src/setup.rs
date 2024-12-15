@@ -36,14 +36,16 @@ async fn os_setup(app: AppHandle) {
     let mut js = String::new();
     #[cfg(target_os = "windows")]
     {
+
+        js += r#"const whiteBg = () => document.getElementsByTagName("html")[0].style.setProperty('background-color', '#E8E8E8', 'important');"#;
         js += match version() {
             Version::Semantic(i, j, k) if k > 22000 => {
                 // Windows 10 和 11 共享相同的主要版本和次要版本 i, j ，Windows 11 通过其内部版本号 k 22000 进行区分
-                info!("{}",format!("Os: {i} {j} {k}"));
-                r#""#
+                info!("Windows 11 detected, version: {}",format!("Os: {i} {j} {k}"));
+                r#"whiteBg();document.addEventListener("DOMContentLoaded", whiteBg);"#
             }
             _ =>{
-                r#"document.addEventListener("DOMContentLoaded", ()=> document.getElementsByTagName("html")[0].style.setProperty('background-color', '#E8E8E8', 'important'));"#
+                r#"whiteBg();document.addEventListener("DOMContentLoaded", whiteBg);"#
             }
         };
     }
