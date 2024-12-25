@@ -26,15 +26,14 @@ tauri-plugin-dialog = "2"
 tauri-plugin-fs = "2"
 tauri-plugin-shell = "2"
 tauri-plugin-os = "2"
-tauri-plugin-http = { version =  "2" ,features = ["multipart"] }
+tauri-plugin-http = { version = "2", features = ["multipart"] }
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 
 tokenizers = { version = "0.20.0", features = ["default"] }
 image = { version = "0.25.2", features = ["default"] }
-ort = { version = "2.0.0-rc.9",default-features = false, features = ["ndarray"] }
 ndarray = { version = "0.16.1" }
-xcap = {version = "0.0.14" }
+xcap = { version = "0.0.14" }
 log = "0.4.22"
 tokio = "1.41.1"
 anyhow = "1.0.93"
@@ -46,9 +45,32 @@ tauri-plugin-clipboard-manager = "2.0.2"
 
 [target.'cfg(windows)'.dependencies.windows]
 version = "0.58.0"
-features = ["Win32_Foundation", "Foundation", "Foundation_Collections", "AI", "AI_MachineLearning", "Graphics", "Graphics_Imaging", "Media", "Win32_System_WinRT", "Storage_Streams"]
+features = [
+    "Win32_Foundation",
+    "Foundation",
+    "Foundation_Collections",
+    "AI", "AI_MachineLearning",
+    "Graphics",
+    "Graphics_Imaging",
+    "Media",
+    "Win32_System_WinRT",
+    "Storage_Streams",
+    "Win32_UI_WindowsAndMessaging",
+    "Win32_System_Threading",
+    "Win32_System_ProcessStatus"
+]
+
+[target.'cfg(windows)'.dependencies.ort]
+#version = "2.0.0-rc"
+git = "https://github.com/MosRat/ort"
+branch = "dev"
+features = ["directml", "onednn"]
 
 [target.'cfg(target_os = "linux")'.dependencies]
+ort = { git = "https://github.com/MosRat/ort", branch = "dev" }
+
+[target.'cfg(target_os = "macos")'.dependencies]
+ort = { git = "https://github.com/MosRat/ort", branch = "dev" }
 
 [target.'cfg(not(any(target_os = "android", target_os = "ios")))'.dependencies]
 tauri-plugin-global-shortcut = "2"
@@ -57,8 +79,10 @@ tauri-plugin-single-instance = { version = "2" }
 #None
 
 [features]
+default= ["custom-protocol"]
 # This feature is used for production builds or when a dev server is not specified, DO NOT REMOVE!!
 custom-protocol = ["tauri/custom-protocol"]
+openvino = ["ort/openvino"]
 
 
 

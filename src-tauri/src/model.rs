@@ -1,6 +1,6 @@
 pub const ENCODER_BYTES: &[u8] = include_bytes!(concat!(
     env!("CARGO_MANIFEST_DIR"),
-    r"/../models/encoder_model.onnx"
+    r"/../models/encoder_model_modified.onnx"
 ));
 // const ENCODER_BYTES: &[u8] = &[1];
 pub const DECODER_BYTES: &[u8] = include_bytes!(concat!(

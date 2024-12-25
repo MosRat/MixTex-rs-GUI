@@ -1,0 +1,4 @@
+[build]
+#rustflags = [
+#    "-L", "E:\\GlobalScoopApps\\apps\\vcpkg\\current\\packages\\re2_x64-windows-static\\lib",
+#]

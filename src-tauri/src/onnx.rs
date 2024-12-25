@@ -1,4 +1,4 @@
-use log::info;
+use log::{error, info};
 use ndarray::prelude::*;
 use ort::session::builder::GraphOptimizationLevel;
 use ort::session::{Session, SessionOutputs};
@@ -7,7 +7,11 @@ use tokenizers::Tokenizer;
 
 use crate::mixtex::{check_repeat, OcrModel};
 use crate::model::{DECODER_BYTES, ENCODER_BYTES, TOKENIZER_STR};
-use anyhow::Result;
+use anyhow::{anyhow, Result};
+use ort::execution_providers::ExecutionProvider;
+use ort::io_binding::IoBinding;
+use ort::memory::{AllocationDevice, Allocator, AllocatorType, MemoryInfo, MemoryType};
+use ort::value::Tensor;
 
 const MAX_LENGTH: usize = 512;
 const STOP_TOKEN_IDX: usize = 30000;
@@ -18,71 +22,244 @@ pub struct MixTexOnnx {
 }
 
 impl MixTexOnnx {
-    fn prefill(&self, img: &[f32]) -> Result<(usize, Array<f32, IxDyn>, SessionOutputs)> {
-        let encoder_result = self
-            .encoder_session
-            .run(ort::inputs! {"pixel_values" => ([1,3,448,448],img)}?)?;
-        let hidden_state = encoder_result["last_hidden_state"]
-            .try_extract_tensor::<f32>()?
-            .to_owned();
-        let decode_input_ids = array![[0, 0, 30000_i64]];
-        let k_0 = Array::<f32, _>::zeros((1, 12, 0, 64).f()).into_dyn();
-        let k_1 = Array::<f32, _>::zeros((1, 12, 0, 64).f()).into_dyn();
-        let k_2 = Array::<f32, _>::zeros((1, 12, 0, 64).f()).into_dyn();
-        let v_0 = Array::<f32, _>::zeros((1, 12, 0, 64).f()).into_dyn();
-        let v_1 = Array::<f32, _>::zeros((1, 12, 0, 64).f()).into_dyn();
-        let v_2 = Array::<f32, _>::zeros((1, 12, 0, 64).f()).into_dyn();
+    fn prefill(&self, img: &[f32]) -> Result<(usize, IoBinding)> {
+        let mut encoder_io = self.encoder_session.create_binding()?;
 
-        let decoder_result = self.decoder_session.run(ort::inputs! {
-        "encoder_hidden_states" => hidden_state.view(),
-        "input_ids"=> decode_input_ids.view(),
-        // "use_cache_branch"=>array![true],
-        "past_key_values.0.key"=>k_0.view(),
-        "past_key_values.0.value"=>v_0.view(),
-        "past_key_values.1.key"=>k_1.view(),
-        "past_key_values.1.value"=>v_1.view(),
-        "past_key_values.2.key"=>k_2.view(),
-        "past_key_values.2.value"=>v_2.view(),
-        }?)?;
+        // #[cfg(windows)]
+        // let encoder_allocator = Allocator::new(
+        //     &self.encoder_session,
+        //     MemoryInfo::new(
+        //         AllocationDevice::DIRECTML,
+        //         0,
+        //         AllocatorType::Device,
+        //         MemoryType::CPUInput,
+        //     )?,
+        // )?;
+        // #[cfg(any(target_os = "linux", target_os = "macos"))]
+        // let encoder_allocator = Allocator::new(
+        //     &self.encoder_session,
+        //     #[cfg(windows)]
+        //     MemoryInfo::new(
+        //         AllocationDevice::CPU,
+        //         0,
+        //         AllocatorType::Device,
+        //         MemoryType::CPUInput,
+        //     )?,
+        // )?;
 
-        let logits = decoder_result["logits"].try_extract_tensor::<f32>()?;
-        let next_token_id = logits
-            .slice(s![0, -1, ..])
-            .iter()
-            .enumerate()
-            .max_by(|&(_, x), &(_, y)| x.partial_cmp(&y).unwrap())
-            .unwrap()
-            .0;
+        let input: Tensor<f32> =
+            Tensor::from_array(([1, 3, 448, 448], img.to_vec().into_boxed_slice()))?;
 
-        Ok((next_token_id, hidden_state, decoder_result))
+        encoder_io.bind_input("pixel_values", &input)?;
+        encoder_io.bind_output(
+            "last_hidden_state",
+            Tensor::<f32>::new(self.encoder_session.allocator(), [1, 196, 768])?,
+        )?;
+        let mut encoder_result = match encoder_io.run() {
+            Ok(x) => x,
+            Err(e) => {
+                self.encoder_session.end_profiling().unwrap();
+                return Err(anyhow!("{e:?}"));
+            }
+        };
+        let hidden_state = encoder_result.remove("last_hidden_state").unwrap();
+        // let decode_input_ids = array![[0, 0, 30000_i64]];
+        // let k_0 = Array::<f32, _>::zeros((1, 12, 0, 64).f()).into_dyn();
+        // let k_1 = Array::<f32, _>::zeros((1, 12, 0, 64).f()).into_dyn();
+        // let k_2 = Array::<f32, _>::zeros((1, 12, 0, 64).f()).into_dyn();
+        // let v_0 = Array::<f32, _>::zeros((1, 12, 0, 64).f()).into_dyn();
+        // let v_1 = Array::<f32, _>::zeros((1, 12, 0, 64).f()).into_dyn();
+        // let v_2 = Array::<f32, _>::zeros((1, 12, 0, 64).f()).into_dyn();
+
+        // #[cfg(windows)]
+        // let decoder_allocator = Allocator::new(
+        //     &self.decoder_session,
+        //     MemoryInfo::new(
+        //         AllocationDevice::DIRECTML,
+        //         0,
+        //         AllocatorType::Device,
+        //         MemoryType::CPUInput,
+        //     )?,
+        // )?;
+        // #[cfg(any(target_os = "linux", target_os = "macos"))]
+        // let decoder_allocator = Allocator::new(
+        //     &self.decoder_session,
+        //     #[cfg(windows)]
+        //     MemoryInfo::new(
+        //         AllocationDevice::CPU,
+        //         0,
+        //         AllocatorType::Device,
+        //         MemoryType::CPUInput,
+        //     )?,
+        // )?;
+
+        let mut decoder_io = self.decoder_session.create_binding()?;
+        decoder_io.bind_input("encoder_hidden_states", &hidden_state)?;
+        decoder_io.bind_input(
+            "input_ids",
+            &Tensor::<i64>::from_array(([1, 3], vec![0, 0, 30000_i64]))?,
+        )?;
+        #[cfg(windows)]
+        decoder_io.bind_output(
+            "logits",
+            Tensor::<f32>::new(self.decoder_session.allocator(), [1, 3,30002])?
+        )?;
+        #[cfg(any(target_os = "linux", target_os = "macos"))]
+        decoder_io.bind_output(
+            "logits",
+            Tensor::<f32>::new(self.decoder_session.allocator(), [1, 3,30002])?
+        )?;
+
+        let fake_kv = Tensor::from_array(Array4::<f32>::zeros((1, 12, 0, 64)))?;
+        for i in 0..3 {
+            decoder_io.bind_input(&format!("past_key_values.{i}.value"), &fake_kv)?;
+            decoder_io.bind_input(&format!("past_key_values.{i}.key"), &fake_kv)?;
+            decoder_io.bind_output(
+                &format!("present.{i}.key"),
+                Tensor::<f32>::new(self.decoder_session.allocator(), [1, 12, 3, 64])?,
+            )?;
+            decoder_io.bind_output(
+                &format!("present.{i}.value"),
+                Tensor::<f32>::new(self.decoder_session.allocator(), [1, 12, 3, 64])?,
+            )?;
+        }
+        let mut next_token_id;
+        let mut kv_cache = Vec::with_capacity(6);
+        {
+            let mut decoder_result = decoder_io.run()?;
+
+            let logits = decoder_result
+                .remove("logits")
+                .unwrap()
+                .try_extract_tensor::<f32>()?
+                .to_owned();
+            next_token_id = logits
+                .slice(s![0, -1, ..])
+                .iter()
+                .enumerate()
+                .max_by(|&(_, x), &(_, y)| x.partial_cmp(&y).unwrap())
+                .unwrap()
+                .0;
+
+            for i in 0..3 {
+                kv_cache.push(
+                    decoder_result
+                        .remove(&format!("present.{i}.value"))
+                        .unwrap(),
+                );
+                kv_cache.push(decoder_result.remove(&format!("present.{i}.key")).unwrap());
+            }
+
+        }
+        decoder_io.clear_outputs();
+
+        for i in 0..3 {
+            decoder_io.bind_input(&format!("past_key_values.{i}.value"), &kv_cache[i * 2])?;
+            decoder_io.bind_input(&format!("past_key_values.{i}.key"), &kv_cache[i * 2 + 1])?;
+            decoder_io.bind_output(
+                &format!("present.{i}.key"),
+                Tensor::<f32>::new(self.decoder_session.allocator(), [1, 12, 4, 64])?,
+            )?;
+            decoder_io.bind_output(
+                &format!("present.{i}.value"),
+                Tensor::<f32>::new(self.decoder_session.allocator(), [1, 12, 4, 64])?,
+            )?;
+        }
+
+        #[cfg(windows)]
+        decoder_io.bind_output(
+            "logits",
+            Tensor::<f32>::new(self.decoder_session.allocator(), [1, 1,30002])?
+        )?;
+        #[cfg(any(target_os = "linux", target_os = "macos"))]
+        decoder_io.bind_output(
+            "logits",
+            Tensor::<f32>::new(self.decoder_session.allocator(), [1, 1,30002])?
+        )?;
+        Ok((next_token_id, decoder_io))
     }
 
-    fn decode_once<'a>(
-        &'a self,
-        state: (usize, Array<f32, IxDyn>, SessionOutputs<'a, 'a>),
-    ) -> Result<(usize, Array<f32, IxDyn>, SessionOutputs<'a, 'a>)> {
-        let (mut next_token_id, hidden_state, mut decoder_result) = state;
-        decoder_result = self.decoder_session.run(ort::inputs! {
-        "encoder_hidden_states" => hidden_state.view(),
-        "input_ids"=> array![[next_token_id as i64]],
-        // "use_cache_branch"=>array![true],
-        "past_key_values.0.key"=>decoder_result["present.0.key"].try_extract_tensor::<f32>()?,
-        "past_key_values.0.value"=>decoder_result["present.0.value"].try_extract_tensor::<f32>()?,
-        "past_key_values.1.key"=>decoder_result["present.1.key"].try_extract_tensor::<f32>()?,
-        "past_key_values.1.value"=>decoder_result["present.1.value"].try_extract_tensor::<f32>()?,
-        "past_key_values.2.key"=>decoder_result["present.2.key"].try_extract_tensor::<f32>()?,
-        "past_key_values.2.value"=>decoder_result["present.2.value"].try_extract_tensor::<f32>()?,
-        }?)?;
-        // println!("---->loop {i} {:?} ",start_loop.elapsed());
-        let logits = decoder_result["logits"].try_extract_tensor::<f32>()?;
-        next_token_id = logits
-            .slice(s![0, -1, ..])
-            .iter()
-            .enumerate()
-            .max_by(|&(_, x), &(_, y)| x.partial_cmp(&y).unwrap())
-            .unwrap()
-            .0;
-        Ok((next_token_id, hidden_state, decoder_result))
+    fn decode_once(&self, state: (usize, IoBinding)) -> Result<(usize, IoBinding)> {
+        let (mut next_token_id, mut decoder_io) = state;
+        decoder_io.bind_input(
+            "input_ids",
+            &Tensor::<i64>::from_array(([1, 1], vec![next_token_id as i64]))?,
+        )?;
+
+        let mut kv_cache = Vec::with_capacity(6);
+
+        {
+            let mut decoder_result = decoder_io.run()?;
+
+            let logits = decoder_result
+                .remove("logits")
+                .unwrap()
+                .try_extract_tensor::<f32>()?
+                .to_owned();
+            next_token_id = logits
+                .slice(s![0, -1, ..])
+                .iter()
+                .enumerate()
+                .max_by(|&(_, x), &(_, y)| x.partial_cmp(&y).unwrap())
+                .unwrap()
+                .0;
+
+            for i in 0..3 {
+                kv_cache.push(
+                    decoder_result
+                        .remove(&format!("present.{i}.value"))
+                        .unwrap(),
+                );
+                kv_cache.push(decoder_result.remove(&format!("present.{i}.key")).unwrap());
+            }
+
+
+        }
+        decoder_io.clear_outputs();
+        let num_tokens = kv_cache[0].shape()?[2];
+
+        for i in 0..3 {
+            decoder_io.bind_input(&format!("past_key_values.{i}.value"), &kv_cache[i * 2])?;
+            decoder_io.bind_input(&format!("past_key_values.{i}.key"), &kv_cache[i * 2 + 1])?;
+
+            decoder_io.bind_output(
+                &format!("present.{i}.key"),
+                Tensor::<f32>::new(
+                    self.decoder_session.allocator(),
+                    [1, 12, num_tokens + 1, 64],
+                )?,
+            )?;
+            decoder_io.bind_output(
+                &format!("present.{i}.value"),
+                Tensor::<f32>::new(
+                    self.decoder_session.allocator(),
+                    [1, 12, num_tokens + 1, 64],
+                )?,
+            )?;
+        }
+
+        #[cfg(windows)]
+        decoder_io.bind_output_to_device(
+            "logits",
+            &MemoryInfo::new(
+                AllocationDevice::CPU,
+                0,
+                AllocatorType::Device,
+                MemoryType::CPUOutput,
+            )?,
+        )?;
+        #[cfg(any(target_os = "linux", target_os = "macos"))]
+        decoder_io.bind_output_to_device(
+            "logits",
+            &MemoryInfo::new(
+                AllocationDevice::CPU,
+                0,
+                AllocatorType::Device,
+                MemoryType::CPUOutput,
+            )?,
+        )?;
+
+        Ok((next_token_id, decoder_io))
     }
 }
 
@@ -113,26 +290,48 @@ impl OcrModel for MixTexOnnx {
         // ort::ExecutionProvider::register(&cuda, &builder).map_err(|v| {
         //     anyhow::anyhow!("Please check if ONNX Runtime is compiled with CUDA support: {v}")
         // })?;
-        // println!("CUDA:{:?} DirectML:{:?}", encoder_cuda.is_available().unwrap(), decoder_dm.is_available().unwrap());
+        println!(
+            "CUDA:{:?} DirectML:{:?}",
+            false,
+            ort::execution_providers::DirectMLExecutionProvider::default()
+                .is_available()
+                .unwrap()
+        );
         let encoder_session = encoder_builder
             .with_execution_providers([
-                // encoder_cuda.build(),
-                // dm.build()
+                #[cfg(windows)]
+                ort::execution_providers::DirectMLExecutionProvider::default()
+                    .with_device_id(1)
+                    .build(),
+                // ort::execution_providers::OneDNNExecutionProvider::default().with_use_arena(true).build()
             ])?
             .with_optimization_level(GraphOptimizationLevel::Level3)?
-            .with_intra_threads(8)?
-            .with_inter_threads(8)?
+            .with_memory_pattern(true)?
+            // .with_qdq_cleanup()?
+            // .with_parallel_execution(true)?
+            // .with_intra_threads(8)?
+            // .with_inter_threads(8)?
+            .with_profiling(
+                r#"C:\Users\whl\WorkSpace\RustProjects\GotOnnx\profile\mixtex_encoder"#,
+            )?
             .commit_from_memory(ENCODER_BYTES)?;
         let decoder_session = decoder_builder
             .with_execution_providers([
                 // decoder_cuda.build(),
                 // decoder_dm.build(),
                 // dm.build()
+                #[cfg(windows)]
+                ort::execution_providers::DirectMLExecutionProvider::default().with_device_id(1).build(),
+                // ort::execution_providers::OneDNNExecutionProvider::default().with_use_arena(true).build()
             ])?
             .with_optimization_level(GraphOptimizationLevel::Level3)?
+            .with_profiling(
+                r#"C:\Users\whl\WorkSpace\RustProjects\GotOnnx\profile\mixtex_decoder"#,
+            )?
+            // .with_qdq_cleanup()?
             // .with_parallel_execution(true)?
-            .with_intra_threads(12)?
-            .with_inter_threads(12)?
+            // .with_intra_threads(12)?
+            // .with_inter_threads(12)?
             .commit_from_memory(DECODER_BYTES)?;
         Ok(MixTexOnnx {
             encoder_session,
@@ -148,13 +347,12 @@ impl OcrModel for MixTexOnnx {
         let check_rate = MAX_LENGTH / 64;
         let mut result_idx = [0_u32; MAX_LENGTH];
 
-        let (mut next_token_id, mut hidden_state, mut decoder_result) = self.prefill(img)?;
+        let (mut next_token_id, mut decoder_io) = self.prefill(img)?;
         result_idx[0] = next_token_id as u32;
 
         for i in 1..MAX_LENGTH {
             // let start_loop = std::time::Instant::now();
-            (next_token_id, hidden_state, decoder_result) =
-                self.decode_once((next_token_id, hidden_state, decoder_result))?;
+            (next_token_id, decoder_io) = self.decode_once((next_token_id, decoder_io))?;
             result_idx[i] = next_token_id as u32;
 
             // stop token 的id
@@ -178,7 +376,7 @@ impl OcrModel for MixTexOnnx {
         let mut result_idx = [0_u32; MAX_LENGTH];
         let mut result_string = String::with_capacity(512);
 
-        let (mut next_token_id, mut hidden_state, mut decoder_result) = self.prefill(img)?;
+        let (mut next_token_id, mut decoder_io) = self.prefill(img)?;
         result_idx[0] = next_token_id as u32;
         let res = self
             .tokenizer
@@ -188,8 +386,7 @@ impl OcrModel for MixTexOnnx {
         callback(res);
 
         for i in 1..MAX_LENGTH {
-            (next_token_id, hidden_state, decoder_result) =
-                self.decode_once((next_token_id, hidden_state, decoder_result))?;
+            (next_token_id, decoder_io) = self.decode_once((next_token_id, decoder_io))?;
             let res = self
                 .tokenizer
                 .decode(&[next_token_id as u32], true)
@@ -208,7 +405,8 @@ impl OcrModel for MixTexOnnx {
                 break;
             }
         }
-
+        self.decoder_session.end_profiling()?;
+        self.encoder_session.end_profiling()?;
         Ok(result_string)
     }
 }
