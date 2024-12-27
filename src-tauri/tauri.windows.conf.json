@@ -1,0 +1,28 @@
+{
+  "$schema": "./config-schema.json",
+  "identifier": "com.mosrat.mixtex-rs-gui",
+  "bundle": {
+    "resources": {
+      "../lib/x86-64-windows-msvc-dml-intel/DirectML.dll": "DirectML.dll"
+    },
+    "targets": ["nsis"],
+    "windows": {
+      "certificateThumbprint": null,
+      "digestAlgorithm": "sha256",
+      "timestampUrl": "",
+      "webviewInstallMode": {
+        "type": "embedBootstrapper",
+        "silent": true
+      },
+      "nsis": {
+        "displayLanguageSelector": true,
+        "installerIcon": "icons/icon.ico",
+        "languages": ["SimpChinese", "English"],
+        "installMode": "perMachine"
+      },
+      "wix": {
+        "language": ["en-US","zh-CN"]
+      }
+    }
+  }
+}

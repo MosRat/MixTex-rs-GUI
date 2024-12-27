@@ -40,7 +40,6 @@
   "mainBinaryName": "mixtex-rs-gui",
   "version": "0.5.2",
   "identifier": "com.mosrat.mixtex-rs-gui",
-  "plugins": {},
   "app": {
     "withGlobalTauri": true,
     "windows": [

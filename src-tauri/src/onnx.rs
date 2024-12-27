@@ -102,12 +102,12 @@ impl MixTexOnnx {
         #[cfg(windows)]
         decoder_io.bind_output(
             "logits",
-            Tensor::<f32>::new(self.decoder_session.allocator(), [1, 3,30002])?
+            Tensor::<f32>::new(self.decoder_session.allocator(), [1, 3, 30002])?,
         )?;
         #[cfg(any(target_os = "linux", target_os = "macos"))]
         decoder_io.bind_output(
             "logits",
-            Tensor::<f32>::new(self.decoder_session.allocator(), [1, 3,30002])?
+            Tensor::<f32>::new(self.decoder_session.allocator(), [1, 3, 30002])?,
         )?;
 
         let fake_kv = Tensor::from_array(Array4::<f32>::zeros((1, 12, 0, 64)))?;
@@ -149,7 +149,6 @@ impl MixTexOnnx {
                 );
                 kv_cache.push(decoder_result.remove(&format!("present.{i}.key")).unwrap());
             }
-
         }
         decoder_io.clear_outputs();
 
@@ -169,18 +168,18 @@ impl MixTexOnnx {
         #[cfg(windows)]
         decoder_io.bind_output(
             "logits",
-            Tensor::<f32>::new(self.decoder_session.allocator(), [1, 1,30002])?
+            Tensor::<f32>::new(self.decoder_session.allocator(), [1, 1, 30002])?,
         )?;
         #[cfg(any(target_os = "linux", target_os = "macos"))]
         decoder_io.bind_output(
             "logits",
-            Tensor::<f32>::new(self.decoder_session.allocator(), [1, 1,30002])?
+            Tensor::<f32>::new(self.decoder_session.allocator(), [1, 1, 30002])?,
         )?;
         Ok((next_token_id, decoder_io))
     }
 
-    fn decode_once(&self, state: (usize, IoBinding)) -> Result<(usize, IoBinding)> {
-        let (mut next_token_id, mut decoder_io) = state;
+    fn decode_once(&self, state: (usize, IoBinding, usize)) -> Result<(usize, IoBinding)> {
+        let (mut next_token_id, mut decoder_io, num_tokens) = state;
         decoder_io.bind_input(
             "input_ids",
             &Tensor::<i64>::from_array(([1, 1], vec![next_token_id as i64]))?,
@@ -212,11 +211,9 @@ impl MixTexOnnx {
                 );
                 kv_cache.push(decoder_result.remove(&format!("present.{i}.key")).unwrap());
             }
-
-
         }
         decoder_io.clear_outputs();
-        let num_tokens = kv_cache[0].shape()?[2];
+        // let num_tokens = kv_cache[0].shape()?[2];
 
         for i in 0..3 {
             decoder_io.bind_input(&format!("past_key_values.{i}.value"), &kv_cache[i * 2])?;
@@ -239,24 +236,14 @@ impl MixTexOnnx {
         }
 
         #[cfg(windows)]
-        decoder_io.bind_output_to_device(
+        decoder_io.bind_output(
             "logits",
-            &MemoryInfo::new(
-                AllocationDevice::CPU,
-                0,
-                AllocatorType::Device,
-                MemoryType::CPUOutput,
-            )?,
+            Tensor::<f32>::new(self.decoder_session.allocator(), [1, 1, 30002])?,
         )?;
         #[cfg(any(target_os = "linux", target_os = "macos"))]
-        decoder_io.bind_output_to_device(
+        decoder_io.bind_output(
             "logits",
-            &MemoryInfo::new(
-                AllocationDevice::CPU,
-                0,
-                AllocatorType::Device,
-                MemoryType::CPUOutput,
-            )?,
+            Tensor::<f32>::new(self.decoder_session.allocator(), [1, 1, 30002])?,
         )?;
 
         Ok((next_token_id, decoder_io))
@@ -303,16 +290,22 @@ impl OcrModel for MixTexOnnx {
                 ort::execution_providers::DirectMLExecutionProvider::default()
                     .with_device_id(1)
                     .build(),
-                // ort::execution_providers::OneDNNExecutionProvider::default().with_use_arena(true).build()
+                ort::execution_providers::OneDNNExecutionProvider::default().with_use_arena(true).build()
             ])?
             .with_optimization_level(GraphOptimizationLevel::Level3)?
-            .with_memory_pattern(true)?
+            // .with_memory_pattern(true)?
             // .with_qdq_cleanup()?
             // .with_parallel_execution(true)?
             // .with_intra_threads(8)?
             // .with_inter_threads(8)?
+            // .with_profiling(
+            //     r#"C:\Users\whl\WorkSpace\RustProjects\GotOnnx\profile\mixtex_encoder"#,
+            // )?
             .with_profiling(
-                r#"C:\Users\whl\WorkSpace\RustProjects\GotOnnx\profile\mixtex_encoder"#,
+                std::env::current_exe()?
+                    .parent()
+                    .unwrap()
+                    .join("mixtex_encoder_profile"),
             )?
             .commit_from_memory(ENCODER_BYTES)?;
         let decoder_session = decoder_builder
@@ -321,13 +314,21 @@ impl OcrModel for MixTexOnnx {
                 // decoder_dm.build(),
                 // dm.build()
                 #[cfg(windows)]
-                ort::execution_providers::DirectMLExecutionProvider::default().with_device_id(1).build(),
-                // ort::execution_providers::OneDNNExecutionProvider::default().with_use_arena(true).build()
+                ort::execution_providers::DirectMLExecutionProvider::default()
+                    // .with_device_id(1)
+                    .build(),
+                ort::execution_providers::OneDNNExecutionProvider::default().with_use_arena(true).build()
             ])?
             .with_optimization_level(GraphOptimizationLevel::Level3)?
             .with_profiling(
-                r#"C:\Users\whl\WorkSpace\RustProjects\GotOnnx\profile\mixtex_decoder"#,
+                std::env::current_exe()?
+                    .parent()
+                    .unwrap()
+                    .join("mixtex_decoder_profile"),
             )?
+            // .with_profiling(
+            //     r#"C:\Users\whl\WorkSpace\RustProjects\GotOnnx\profile\mixtex_decoder"#,
+            // )?
             // .with_qdq_cleanup()?
             // .with_parallel_execution(true)?
             // .with_intra_threads(12)?
@@ -352,7 +353,7 @@ impl OcrModel for MixTexOnnx {
 
         for i in 1..MAX_LENGTH {
             // let start_loop = std::time::Instant::now();
-            (next_token_id, decoder_io) = self.decode_once((next_token_id, decoder_io))?;
+            (next_token_id, decoder_io) = self.decode_once((next_token_id, decoder_io, i + 3))?;
             result_idx[i] = next_token_id as u32;
 
             // stop token 的id
@@ -386,7 +387,7 @@ impl OcrModel for MixTexOnnx {
         callback(res);
 
         for i in 1..MAX_LENGTH {
-            (next_token_id, decoder_io) = self.decode_once((next_token_id, decoder_io))?;
+            (next_token_id, decoder_io) = self.decode_once((next_token_id, decoder_io, i + 3))?;
             let res = self
                 .tokenizer
                 .decode(&[next_token_id as u32], true)
