@@ -1,0 +1,25 @@
+{
+  "$schema": "./config-schema.json",
+  "identifier": "com.mosrat.mixtex-rs-gui",
+  "bundle": {
+    "targets": ["nsis","msi"],
+    "windows": {
+      "certificateThumbprint": null,
+      "digestAlgorithm": "sha256",
+      "timestampUrl": "",
+      "webviewInstallMode": {
+        "type": "embedBootstrapper",
+        "silent": true
+      },
+      "nsis": {
+        "displayLanguageSelector": true,
+        "installerIcon": "icons/icon.ico",
+        "languages": ["SimpChinese", "English"],
+        "installMode": "perMachine"
+      },
+      "wix": {
+        "language": ["en-US","zh-CN"]
+      }
+    }
+  }
+}
