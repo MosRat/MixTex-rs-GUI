@@ -4,7 +4,7 @@ mod test {
 
     #[test]
     fn test_image_pre() {
-        use vit_image_processor::{padding, preprocess};
+        use vit_image_processor::preprocess;
         preprocess(r"C:\Users\whl\RustProjects\MixTex-rs-GUI-new\tests\test.png").unwrap();
     }
 }

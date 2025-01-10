@@ -155,10 +155,10 @@ pub fn build_screenshot_window() -> WebviewWindow {
 pub fn screenshot_window() -> WebviewWindow {
     let window = APP.get().unwrap().get_webview_window("screenshot").unwrap();
 
-    let position = get_current_monitor().position();
+    let position = get_current_monitor().position().clone();
     window.set_position(position.clone()).unwrap();
 
-    let &PhysicalPosition { x, y } = position;
+    let PhysicalPosition { x, y } = position;
 
     info!(">>>>>>>>>>>>>>>>>>>>WebviewWindow Got!>>>>>>>>>>>>>>>>");
 

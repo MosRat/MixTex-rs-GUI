@@ -81,7 +81,7 @@ mod tests {
     use tokio;
     #[tokio::test]
     async fn test_simple_tex() {
-        let mut img = std::fs::read(r#"E:\WorkSpace\RustProjects\fast-writer\img.png"#).unwrap();
-        println!("{:}", simple_latex(img).await.unwrap());
+        let img = std::fs::read(r#""#).unwrap();
+        println!("{:}", simple_latex(img,"").await.unwrap());
     }
 }

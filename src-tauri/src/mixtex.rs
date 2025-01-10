@@ -6,7 +6,7 @@ use crate::{api, APP};
 use std::string::ToString;
 
 use std::sync::atomic::{AtomicBool, Ordering};
-use std::sync::{Arc, Mutex, MutexGuard};
+use std::sync::{Arc, Mutex};
 use tauri::{Listener, State};
 // use tauri_plugin_dialog::DialogExt;
 

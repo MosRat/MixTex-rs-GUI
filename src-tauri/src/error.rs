@@ -1,7 +1,6 @@
-use serde::de::Unexpected::Option;
 use crate::APP;
-use tauri::{AppHandle, Manager};
-use tauri_plugin_dialog::{DialogExt, MessageDialogBuilder, MessageDialogKind};
+use tauri::Manager;
+use tauri_plugin_dialog::{DialogExt, MessageDialogKind};
 
 pub fn raise_error_dialog(msg: &str) {
 
@@ -14,6 +13,7 @@ pub fn raise_error_dialog(msg: &str) {
         .blocking_show();
 }
 
+#[warn(dead_code)]
 pub fn get_log_path() -> String {
     APP.get()
         .unwrap()

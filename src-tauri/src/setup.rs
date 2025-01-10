@@ -1,6 +1,6 @@
 use crate::hotkey::register_hotkey;
 use crate::mixtex::Model;
-use crate::window::{build_screenshot_window, screenshot_window};
+use crate::window::build_screenshot_window;
 use crate::{hotkey, APP};
 
 use crate::onnx::MixTexOnnx;
@@ -10,7 +10,6 @@ use image::{EncodableLayout, GenericImageView};
 use log::{info, warn};
 use serde_json::json;
 use tauri::{AppHandle, DragDropEvent, Emitter, Listener, Manager, WindowEvent};
-use tauri_plugin_global_shortcut::{Shortcut, ShortcutEvent};
 use tauri_plugin_os::{version, Version};
 
 pub(crate) async fn setup(app: AppHandle) -> Result<()> {
