@@ -155,8 +155,11 @@ pub fn build_screenshot_window() -> WebviewWindow {
 pub fn screenshot_window() -> WebviewWindow {
     let window = APP.get().unwrap().get_webview_window("screenshot").unwrap();
 
-    let position = get_current_monitor().position().clone();
+    let current_monitor = get_current_monitor();
+    let position = current_monitor.position().clone();
+    let size = current_monitor.size().clone();
     window.set_position(position.clone()).unwrap();
+
 
     let PhysicalPosition { x, y } = position;
 
@@ -175,6 +178,7 @@ pub fn screenshot_window() -> WebviewWindow {
 
     #[cfg(not(target_os = "macos"))]
     window.set_fullscreen(true).unwrap();
+    window.set_size(size.clone()).unwrap();
 
     window.set_always_on_top(true).unwrap();
 
