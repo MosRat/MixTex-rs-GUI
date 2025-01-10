@@ -165,6 +165,19 @@ pub fn screenshot_window() -> WebviewWindow {
     // send monitor position to js
     window.emit("activate", json!({"x":x,"y":y})).unwrap();
 
+    #[cfg(target_os = "macos")]
+    {
+        let monitor = window.current_monitor().unwrap().unwrap();
+        let size = monitor.size();
+        window.set_decorations(false).unwrap();
+        window.set_size(*size).unwrap();
+    }
+
+    #[cfg(not(target_os = "macos"))]
+    window.set_fullscreen(true).unwrap();
+
+    window.set_always_on_top(true).unwrap();
+
     window
 }
 
