@@ -12,6 +12,7 @@
 
 use crate::APP;
 use log::{info, warn};
+use serde_json::json;
 use tauri::utils::config::WindowEffectsConfig;
 use tauri::utils::WindowEffect;
 use tauri::{Emitter, Manager, Monitor, PhysicalPosition, WebviewWindow};
@@ -154,9 +155,15 @@ pub fn build_screenshot_window() -> WebviewWindow {
 pub fn screenshot_window() -> WebviewWindow {
     let window = APP.get().unwrap().get_webview_window("screenshot").unwrap();
 
+    let position = get_current_monitor().position();
+    window.set_position(position).unwrap();
+
+    let &PhysicalPosition { x, y } = position;
+
     info!(">>>>>>>>>>>>>>>>>>>>WebviewWindow Got!>>>>>>>>>>>>>>>>");
 
-    window.emit("activate", "").unwrap();
+    // send monitor position to js
+    window.emit("activate", json!({"x":x,"y":y})).unwrap();
 
     window
 }

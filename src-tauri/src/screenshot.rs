@@ -56,7 +56,7 @@ struct CropPayload {
 pub fn screenshot(handle: AppHandle) -> tauri::ipc::Response {
     let s = Instant::now();
     let &PhysicalPosition { x, y } = get_current_monitor().position();
-    info!("Screenshot screen with monitor position: x={}, y={}", x, y);
+    info!(" <1> Screenshot screen with monitor position: x={}, y={}", x, y);
 
     let screen = Monitor::from_point(x, y)
         .inspect_err(|e| {
@@ -73,7 +73,7 @@ pub fn screenshot(handle: AppHandle) -> tauri::ipc::Response {
             raise_error_dialog(&e);
         })
         .unwrap();
-    info!("screen captrue time cost:{:?}", s.elapsed());
+    info!("screen capture time cost:{:?}", s.elapsed());
     let buf = img.as_raw().clone();
 
     let window = handle.get_webview_window("screenshot").unwrap();
@@ -81,6 +81,7 @@ pub fn screenshot(handle: AppHandle) -> tauri::ipc::Response {
         // recognize_window();
         let handle = APP.get().unwrap();
         let size: CropPayload = serde_json::from_str(&event.payload()).unwrap();
+        info!(" <3> Receive crop area from js :{:?}", size);
         let img = img
             .view(size.left, size.top, size.width, size.height)
             .to_image();
@@ -90,53 +91,17 @@ pub fn screenshot(handle: AppHandle) -> tauri::ipc::Response {
         let (w, h) = img.dimensions();
         window.emit("image_arrive", json!({"w":w,"h":h})).unwrap();
 
-        // tauri::async_runtime::spawn(async move {
-        //     let (w, h) = img.dimensions();
-        //     let mut buf = Vec::with_capacity((w * h * 4) as usize);
-        //     encode_png(&img, &mut buf);
-        //
-        //     let latex = simple_latex(buf)
-        //         .await.
-        //         inspect_err(|e| warn!("Api call fail :{e:?}")).
-        //         unwrap_or_default();
-        //     let (window, exist) = build_formula_window();
-        //     info!("window? {:}",exist);
-        //
-        //     if exist {
-        //         window.emit("latex_arrive",
-        //                     json!({
-        //                                     "latex":latex,
-        //                                     "w":w,
-        //                                     "h":h
-        //                                     })).unwrap();
-        //     } else {
-        //         window.clone()
-        //             .once("init", move |_| {
-        //                 info!("window init!");
-        //                 window.emit("latex_arrive",
-        //                             json!({
-        //                                     "latex":latex,
-        //                                     "w":w,
-        //                                     "h":h
-        //                                     })).unwrap();
-        //             });
-        //     }
-        // });
-        info!("Receive crop area from js :{:?}", size);
-
-        // let (w, _) = build_window("main", "fast writer");
-        // w.set_resizable(false).unwrap();
         handle
             .get_webview_window("screenshot")
             .unwrap()
             .emit("success_save", "")
             .unwrap();
-        info!("emit success to js!");
+        info!("<4> Report success to js!");
         let _ = handle.get_webview_window("main").unwrap().show();
         let _ = handle.get_webview_window("main").unwrap().set_focus();
     });
 
-    info!("return img to js!Total time cost: {:?}", s.elapsed());
+    info!(" <2> Return img to js!Total time cost: {:?}", s.elapsed());
     tauri::ipc::Response::new(buf)
 }
 

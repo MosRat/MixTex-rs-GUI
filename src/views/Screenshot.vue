@@ -13,7 +13,7 @@ import {onMounted, ref} from 'vue';
 import {invoke} from '@tauri-apps/api/core';
 import {info, warn} from "@tauri-apps/plugin-log";
 import {getCurrentWebviewWindow} from "@tauri-apps/api/webviewWindow";
-import {currentMonitor, Monitor, UserAttentionType} from '@tauri-apps/api/window';
+import {Monitor, UserAttentionType, monitorFromPoint} from '@tauri-apps/api/window';
 
 info(">>>>>>>>>>>>>Vue setup>>>>>>>>>>>>")
 
@@ -39,12 +39,14 @@ info(`${screen}`)
 onMounted(async () => {
   info(">>>>>>>>>>>>>Screenshot window mount!>>>>>>>>>>>>")
 
-  await appWindow.listen<void>("activate", async () => {
+  await appWindow.listen<{ x: number, y: number }>("activate", async (event): Promise<void> => {
     invoke<ArrayBuffer>('screenshot', {}).then(
         async (uint8Array: ArrayBuffer) => {
+          const {x, y} = event.payload
 
-          const monitor = await currentMonitor() as Monitor
+          const monitor = await monitorFromPoint(x, y) as Monitor
           const rect = monitor.size
+          info(`screen size:w=${rect.width},h=${rect.height}`)
           const clampedArray = new Uint8ClampedArray(uint8Array);
 
           // 获取 Canvas 和上下文
