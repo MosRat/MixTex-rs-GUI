@@ -28,9 +28,11 @@ function processClipboardImage(items) {
 
 const initTauri = async () => {
     const tauri = window.__TAURI__
-    const {listen} = tauri.event
-    const {invoke} = tauri.core
-    const {getCurrentWindow} = tauri.window
+    const { listen } = tauri.event
+    const { invoke } = tauri.core
+    const { getCurrentWindow } = tauri.window
+    const { revealItemInDir } = tauri.opener;
+    const { appConfigDir } = tauri.path
     console.log(tauri)
 
     // fix tauri bug https://github.com/tauri-apps/tauri/issues/8632#issuecomment-975607891
@@ -89,7 +91,7 @@ const onLoad = async () => {
     });
 
     document.getElementById("img-canvas").onclick = () => window.__TAURI__.window.getCurrentWindow().emit('select_img')
-
+    document.getElementById("btn_config").onclick = async () => await window.__TAURI__.opener.revealItemInDir(await window.__TAURI__.path.appConfigDir() + "\\custom.js")
 
 }
 

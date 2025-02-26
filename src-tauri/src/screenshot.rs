@@ -56,7 +56,10 @@ struct CropPayload {
 pub fn screenshot(handle: AppHandle) -> tauri::ipc::Response {
     let s = Instant::now();
     let &PhysicalPosition { x, y } = get_current_monitor().position();
-    info!(" <1> Screenshot screen with monitor position: x={}, y={}", x, y);
+    info!(
+        " <1> Screenshot screen with monitor position: x={}, y={}",
+        x, y
+    );
 
     let screen = Monitor::from_point(x, y)
         .inspect_err(|e| {

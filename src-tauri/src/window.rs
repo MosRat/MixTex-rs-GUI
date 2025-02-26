@@ -10,13 +10,13 @@
  * Description:
  */
 
+use crate::error::raise_error_dialog;
 use crate::APP;
 use log::{info, warn};
 use serde_json::json;
 use tauri::utils::config::WindowEffectsConfig;
 use tauri::utils::WindowEffect;
 use tauri::{Emitter, Manager, Monitor, PhysicalPosition, WebviewWindow};
-use crate::error::raise_error_dialog;
 // Unnecessary in tauri 2.0
 // Get daemon window instance
 // fn get_daemon_window() -> Window {
@@ -69,10 +69,9 @@ pub fn build_window(label: &str, title: &str) -> (WebviewWindow, bool) {
             (v, true)
         }
         None => {
-
             let current_monitor = get_current_monitor();
             let position = current_monitor.position();
-            
+
             info!("Window not existence, Creating new window: {}", label);
             let mut builder = tauri::WebviewWindowBuilder::new(
                 app_handle,
@@ -160,7 +159,6 @@ pub fn screenshot_window() -> WebviewWindow {
     let size = current_monitor.size().clone();
     window.set_position(position.clone()).unwrap();
 
-
     let PhysicalPosition { x, y } = position;
 
     info!(">>>>>>>>>>>>>>>>>>>>WebviewWindow Got!>>>>>>>>>>>>>>>>");
@@ -204,7 +202,16 @@ pub fn build_formula_window() -> (WebviewWindow, bool) {
             .enable_clipboard_access()
             .decorations(false)
             .resizable(false)
-            // .initialization_script(include_str!("../scripts/formula_editor.js"))
+            .initialization_script(
+                &std::fs::read_to_string(
+                    app_handle
+                        .path()
+                        .app_config_dir()
+                        .unwrap()
+                        .join("custom.js"),
+                )
+                .unwrap_or("".to_string()),
+            )
             .disable_drag_drop_handler()
             .title("Latex Formula Editor")
             // .transparent(true) # for macos

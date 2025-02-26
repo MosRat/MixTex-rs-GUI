@@ -15,13 +15,10 @@ var scriptLoader = {
   },
   init: function () {
     if (scriptLoader.isIE()) {
-      document.getElementById("isJavaScript").style.display = "none";
-      document.getElementById("ifIE-show").style.display = "block";
-      document.body.style.overflowY = "hidden";
+
       return false;
     } else {
-      document.getElementById("isJavaScript").remove();
-      document.getElementById("ifIE-show").remove();
+
       //更新图片路径
       // document.getElementById("img_eqcode").src = boot_body + "/img/wechat.png";
       // document.getElementById("img_toutiao").src = boot_body + "/img/toutiao.png";

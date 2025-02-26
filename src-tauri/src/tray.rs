@@ -9,7 +9,7 @@ pub fn create_tray(app: &AppHandle) -> Result<()> {
     let menu = create_menu(&app)?;
     let _tray = TrayIconBuilder::new()
         .icon(app.default_window_icon().unwrap().clone())
-        .tooltip("Fast Writer!")
+        .tooltip("Ocr your latex!")
         .menu_on_left_click(false)
         .on_tray_icon_event(|tray, event| match event {
             TrayIconEvent::Click {
@@ -42,7 +42,8 @@ pub fn create_tray(app: &AppHandle) -> Result<()> {
 
 pub fn create_menu<R: tauri::Runtime>(app: &AppHandle<R>) -> Result<Menu<R>> {
     let menu = Menu::new(app)?;
-    let quit_i = MenuItem::with_id(app, "quit", "Quit", true, None::<&str>)?;
+    let quit_i = MenuItem::with_id(app, "quit", "Quit Mixtex", true, None::<&str>)?;
+    let restart_i = MenuItem::with_id(app, "restart", "Restart Mixtex", true, None::<&str>)?;
     // let config_i = MenuItem::with_id(app, "config", "Config", true, None::<&str>)?;
     let formula_i = MenuItem::with_id(app, "formula", "Latex formula editor", true, None::<&str>)?;
 
@@ -50,6 +51,7 @@ pub fn create_menu<R: tauri::Runtime>(app: &AppHandle<R>) -> Result<Menu<R>> {
         &formula_i,
         // &config_i,
         &PredefinedMenuItem::separator(app)?,
+        &restart_i,
         &quit_i,
     ])?;
 
@@ -62,6 +64,9 @@ pub fn handle_menu_event(app: &AppHandle, event: MenuEvent) {
     match event.id.as_ref() {
         "quit" => {
             app.exit(0);
+        }
+        "restart" => {
+            app.restart();
         }
         "config" => {
             config_window();

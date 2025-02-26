@@ -15,22 +15,26 @@ use tauri_plugin_os::{version, Version};
 pub(crate) async fn setup(app: AppHandle) -> Result<()> {
     // app.get_webview_window("main").unwrap().clear_all_browsing_data()?;
 
-    let _ = register_hotkey(
-        &app,
-        hotkey::handle_screenshot_hotkey,
-        "Alt+X",
-    )
-    .inspect_err(|e| warn!("{e}"));
+    // register hot keys
+    let _ = register_hotkey(&app, hotkey::handle_screenshot_hotkey, "Alt+X")
+        .inspect_err(|e| warn!("{e}"));
 
+    // pre-build screenshot windows
     let _ = build_screenshot_window();
 
+    // initialize model and other tauri states
     tauri::async_runtime::spawn(init_states(app.clone()));
-    tauri::async_runtime::spawn(os_setup(app.clone()));
+
+    // os deps setup
+    tauri::async_runtime::spawn(init_os_info(app.clone()));
+
+    // setup configs
+    tauri::async_runtime::spawn(init_configs(app.clone()));
 
     Ok(())
 }
 
-async fn os_setup(app: AppHandle) {
+async fn init_os_info(app: AppHandle) {
     let main_window = app.get_webview_window("main").unwrap();
     let mut js = String::new();
     // #[cfg(target_os = "windows")]
@@ -39,12 +43,13 @@ async fn os_setup(app: AppHandle) {
         js += match version() {
             Version::Semantic(i, j, k) if k > 22000 => {
                 // Windows 10 和 11 共享相同的主要版本和次要版本 i, j ，Windows 11 通过其内部版本号 k 22000 进行区分
-                info!("Windows 11 detected, version: {}",format!("Os: {i} {j} {k}"));
+                info!(
+                    "Windows 11 detected, version: {}",
+                    format!("Os: {i} {j} {k}")
+                );
                 r#""#
             }
-            _ =>{
-                r#"whiteBg();document.addEventListener("DOMContentLoaded", whiteBg);"#
-            }
+            _ => r#"whiteBg();document.addEventListener("DOMContentLoaded", whiteBg);"#,
         };
     }
     main_window.eval(&js).unwrap()
@@ -54,6 +59,21 @@ async fn init_states(app: AppHandle) {
     app.manage(Model::<MixTexOnnx>::new());
     app.manage(ScreenshotWrapper::new());
     init_listeners(app);
+}
+
+async fn init_configs(app: AppHandle) {
+    // create custom.js
+    let config_dir = app.path().app_config_dir().unwrap();
+    if !config_dir.exists() {
+        let _ = std::fs::create_dir_all(&config_dir);
+    }
+    let custom_js_path = config_dir.join("custom.js");
+    if std::fs::metadata(&custom_js_path).is_err() {
+        let _ = std::fs::File::create(&custom_js_path);
+        const CUSTOM_JS: &str = include_str!("../../docs/custom.js");
+
+        let _ = std::fs::write(&custom_js_path, CUSTOM_JS);
+    }
 }
 
 fn init_listeners(app_handle: AppHandle) {

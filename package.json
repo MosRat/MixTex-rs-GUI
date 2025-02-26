@@ -18,7 +18,9 @@
     "@tauri-apps/plugin-http": "~2",
     "@tauri-apps/plugin-log": "~2",
     "@tauri-apps/plugin-notification": "~2",
+    "@tauri-apps/plugin-opener": "^2.2.5",
     "@tauri-apps/plugin-os": "~2",
+    "@tauri-apps/plugin-process": "~2",
     "@tauri-apps/plugin-shell": "~2",
     "katex": "^0.16.11",
     "vue": "^3.5.13",
@@ -29,9 +31,9 @@
     "@types/katex": "^0.16.7",
     "@types/node": "^22.9.1",
     "@vitejs/plugin-vue": "^5.2.0",
+    "@vue/language-server": "^2.2.0",
     "typescript": "5.4.2",
     "vite": "^5.4.11",
-    "vue-tsc": "^2",
-    "@vue/language-server": "^2.2.0"
+    "vue-tsc": "^2"
   }
 }

@@ -23,28 +23,25 @@ where
     }
 }
 
-pub fn handle_screenshot_hotkey(app:&AppHandle, _key:&Shortcut, event:ShortcutEvent) {
-    use tauri_plugin_global_shortcut::ShortcutState;
-    use log::info;
+pub fn handle_screenshot_hotkey(app: &AppHandle, _key: &Shortcut, event: ShortcutEvent) {
     use crate::window::screenshot_window;
+    use log::info;
+    use tauri_plugin_global_shortcut::ShortcutState;
     let app = app.clone();
     match event.state() {
-            ShortcutState::Pressed => {
-                tauri::async_runtime::spawn(async move {
-                    info!(
-                            ">>>>>>>>>>>>>>>>>>>>>>>>>>ShortCur Received!>>>>>>>>>>>>>>>>>>>>>>>"
-                        );
-                    screenshot_window();
+        ShortcutState::Pressed => {
+            tauri::async_runtime::spawn(async move {
+                info!(">>>>>>>>>>>>>>>>>>>>>>>>>>ShortCur Received!>>>>>>>>>>>>>>>>>>>>>>>");
+                screenshot_window();
 
-                    app.notification()
-                        .builder()
-                        .title("Mixtex")
-                        .body("screenshot hot key pressed! \nPlease wait...")
-                        .show()
-                        .unwrap();
-                });
-
-            }
-            _ => {}
+                app.notification()
+                    .builder()
+                    .title("Mixtex")
+                    .body("screenshot hot key pressed! \nPlease wait...")
+                    .show()
+                    .unwrap();
+            });
         }
+        _ => {}
+    }
 }

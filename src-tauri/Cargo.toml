@@ -39,6 +39,8 @@ log = "0.4.22"
 tokio = "1.41.1"
 anyhow = "1.0.93"
 tauri-plugin-clipboard-manager = "2.0.2"
+tauri-plugin-opener = "2.2.5"
+tauri-plugin-process = "2"
 
 
 

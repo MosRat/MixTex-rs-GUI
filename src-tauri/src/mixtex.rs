@@ -1,8 +1,8 @@
-use std::ops::{Deref, DerefMut};
 use crate::onnx::MixTexOnnx;
 use crate::screenshot::ScreenshotWrapper;
 use crate::vit_image_processor::preprocess_from_rgb_array;
 use crate::{api, APP};
+use std::ops::{Deref, DerefMut};
 use std::string::ToString;
 
 use std::sync::atomic::{AtomicBool, Ordering};
@@ -37,8 +37,6 @@ impl<M: OcrModel> DerefMut for Model<M> {
         &mut self.model
     }
 }
-
-
 
 impl<M: OcrModel> Model<M> {
     pub fn new() -> Model<M> {

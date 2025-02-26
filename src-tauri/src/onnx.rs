@@ -26,23 +26,36 @@ impl MixTexOnnx {
             .try_extract_tensor::<f32>()?
             .to_owned();
         let decode_input_ids = array![[0, 0, 30000_i64]];
-        let k_0 = Array::<f32, _>::zeros((1, 12, 0, 64).f()).into_dyn();
-        let k_1 = Array::<f32, _>::zeros((1, 12, 0, 64).f()).into_dyn();
-        let k_2 = Array::<f32, _>::zeros((1, 12, 0, 64).f()).into_dyn();
-        let v_0 = Array::<f32, _>::zeros((1, 12, 0, 64).f()).into_dyn();
-        let v_1 = Array::<f32, _>::zeros((1, 12, 0, 64).f()).into_dyn();
-        let v_2 = Array::<f32, _>::zeros((1, 12, 0, 64).f()).into_dyn();
+        // let k_0 = Array::<f32, _>::zeros((1, 12, 0, 64).f()).into_dyn();
+        // let k_1 = Array::<f32, _>::zeros((1, 12, 0, 64).f()).into_dyn();
+        // let k_2 = Array::<f32, _>::zeros((1, 12, 0, 64).f()).into_dyn();
+        // let k_3 = Array::<f32, _>::zeros((1, 12, 0, 64).f()).into_dyn();
+        // let k_4 = Array::<f32, _>::zeros((1, 12, 0, 64).f()).into_dyn();
+        // let k_5 = Array::<f32, _>::zeros((1, 12, 0, 64).f()).into_dyn();
+        // let v_0 = Array::<f32, _>::zeros((1, 12, 0, 64).f()).into_dyn();
+        // let v_1 = Array::<f32, _>::zeros((1, 12, 0, 64).f()).into_dyn();
+        // let v_2 = Array::<f32, _>::zeros((1, 12, 0, 64).f()).into_dyn();
+        // let v_3 = Array::<f32, _>::zeros((1, 12, 0, 64).f()).into_dyn();
+        // let v_4 = Array::<f32, _>::zeros((1, 12, 0, 64).f()).into_dyn();
+        // let v_5 = Array::<f32, _>::zeros((1, 12, 0, 64).f()).into_dyn();
+        let kv = Array::<f32, _>::zeros((1, 12, 0, 64));
 
         let decoder_result = self.decoder_session.run(ort::inputs! {
         "encoder_hidden_states" => hidden_state.view(),
         "input_ids"=> decode_input_ids.view(),
         // "use_cache_branch"=>array![true],
-        "past_key_values.0.key"=>k_0.view(),
-        "past_key_values.0.value"=>v_0.view(),
-        "past_key_values.1.key"=>k_1.view(),
-        "past_key_values.1.value"=>v_1.view(),
-        "past_key_values.2.key"=>k_2.view(),
-        "past_key_values.2.value"=>v_2.view(),
+        "past_key_values.0.key"=>kv.view(),
+        "past_key_values.0.value"=>kv.view(),
+        "past_key_values.1.key"=>kv.view(),
+        "past_key_values.1.value"=>kv.view(),
+        "past_key_values.2.key"=>kv.view(),
+        "past_key_values.2.value"=>kv.view(),
+        "past_key_values.3.key"=>kv.view(),
+        "past_key_values.3.value"=>kv.view(),
+        "past_key_values.4.key"=>kv.view(),
+        "past_key_values.4.value"=>kv.view(),
+        "past_key_values.5.key"=>kv.view(),
+        "past_key_values.5.value"=>kv.view(),
         }?)?;
 
         let logits = decoder_result["logits"].try_extract_tensor::<f32>()?;
@@ -66,12 +79,18 @@ impl MixTexOnnx {
         "encoder_hidden_states" => hidden_state.view(),
         "input_ids"=> array![[next_token_id as i64]],
         // "use_cache_branch"=>array![true],
-        "past_key_values.0.key"=>decoder_result["present.0.key"].try_extract_tensor::<f32>()?,
-        "past_key_values.0.value"=>decoder_result["present.0.value"].try_extract_tensor::<f32>()?,
-        "past_key_values.1.key"=>decoder_result["present.1.key"].try_extract_tensor::<f32>()?,
-        "past_key_values.1.value"=>decoder_result["present.1.value"].try_extract_tensor::<f32>()?,
-        "past_key_values.2.key"=>decoder_result["present.2.key"].try_extract_tensor::<f32>()?,
-        "past_key_values.2.value"=>decoder_result["present.2.value"].try_extract_tensor::<f32>()?,
+        "past_key_values.0.key"=>decoder_result.remove("present.0.key").unwrap(),
+        "past_key_values.0.value"=>decoder_result.remove("present.0.value").unwrap(),
+        "past_key_values.1.key"=>decoder_result.remove("present.1.key").unwrap(),
+        "past_key_values.1.value"=>decoder_result.remove("present.1.value").unwrap(),
+        "past_key_values.2.key"=>decoder_result.remove("present.2.key").unwrap(),
+        "past_key_values.2.value"=>decoder_result.remove("present.2.value").unwrap(),
+        "past_key_values.3.key"=>decoder_result.remove("present.3.key").unwrap(),
+        "past_key_values.3.value"=>decoder_result.remove("present.3.value").unwrap(),
+        "past_key_values.4.key"=>decoder_result.remove("present.4.key").unwrap(),
+        "past_key_values.4.value"=>decoder_result.remove("present.4.value").unwrap(),
+        "past_key_values.5.key"=>decoder_result.remove("present.5.key").unwrap(),
+        "past_key_values.5.value"=>decoder_result.remove("present.5.value").unwrap(),
         }?)?;
         // println!("---->loop {i} {:?} ",start_loop.elapsed());
         let logits = decoder_result["logits"].try_extract_tensor::<f32>()?;

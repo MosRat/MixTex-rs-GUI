@@ -82,6 +82,6 @@ mod tests {
     #[tokio::test]
     async fn test_simple_tex() {
         let img = std::fs::read(r#""#).unwrap();
-        println!("{:}", simple_latex(img,"").await.unwrap());
+        println!("{:}", simple_latex(img, "").await.unwrap());
     }
 }

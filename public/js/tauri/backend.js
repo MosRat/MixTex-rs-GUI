@@ -1,5 +1,5 @@
 window.backend="mixtex"
-window.sl_token= localStorage.getItem('sl_token') ?? ""
+window.sl_token = window.sl_token_custom ?? (localStorage.getItem('sl_token') ?? "")
 
 
 const initBackend = async ()=>{

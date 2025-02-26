@@ -54,7 +54,7 @@ jobs:
         if: matrix.platform == 'windows-latest'
         shell: pwsh
         run: |
-          Invoke-WebRequest -Uri "https://github.com/MosRat/MixTex-rs-GUI/releases/download/deps/models.zip" -OutFile "models.zip"
+          Invoke-WebRequest -Uri "https://github.com/MosRat/MixTex-rs-GUI/releases/download/deps/models_b.zip" -OutFile "models.zip"
           Expand-Archive -Path "models.zip" -DestinationPath "." -Force
           Remove-Item "models.zip"
 

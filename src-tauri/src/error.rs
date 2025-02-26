@@ -3,7 +3,6 @@ use tauri::Manager;
 use tauri_plugin_dialog::{DialogExt, MessageDialogKind};
 
 pub fn raise_error_dialog(msg: &str) {
-
     APP.get()
         .unwrap()
         .dialog()
@@ -13,7 +12,7 @@ pub fn raise_error_dialog(msg: &str) {
         .blocking_show();
 }
 
-#[warn(dead_code)]
+#[allow(dead_code)]
 pub fn get_log_path() -> String {
     APP.get()
         .unwrap()

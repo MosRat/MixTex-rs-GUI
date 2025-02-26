@@ -1,14 +1,17 @@
 const replaceChars = {
-    "\\(": "$$",
-    "\\)": "$$",
-    "\\[": "$$$",
-    "\\]": "$$$"
+    // "\\(": "$$",
+    // "\\)": "$$",
+    // "\\[": "$$$",
+    // "\\]": "$$$",
+    // "\\(": "",
+    // "\\)": "",
+    // "\\[": "",
+    // "\\]": "",
 }
 
 function replaceWithDictionary(input, dictionary) {
     let output = input;
     for (const [key, value] of Object.entries(dictionary)) {
-        // const regex = new RegExp(key, 'g');
         output = output.replace(key, value);
     }
     return output;
@@ -40,7 +43,7 @@ const handleStart = async (event) => {
     channel.onmessage = async (message) => {
         switch (message.event) {
             case "tokenArrive": {
-                simulateUserInput(textarea, replaceWithDictionary(message.data.token, replaceChars))
+                simulateUserInput(textarea, replaceWithDictionary(message.data.token, {...replaceChars,...(window.replaceRules ?? {})}))
                 break
             }
             case "stop": {

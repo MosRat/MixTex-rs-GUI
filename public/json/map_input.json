@@ -6463,19 +6463,9 @@
                 "descript": "MathML"
             },
             {
-                "tag": "svg_copy",
-                "name": "<i class='fa fa-copy'></i>SVGCode",
-                "descript": "SVGCode"
-            },
-            {
                 "tag": "transfer",
                 "name": "<i class='fa fa-copy'></i>转义",
                 "descript": "转义"
-            },
-            {
-                "tag": "shareurl",
-                "name": "<i class='fa fa-share'></i>ShareURL",
-                "descript": "ShareURL"
             }
         ]
     },
