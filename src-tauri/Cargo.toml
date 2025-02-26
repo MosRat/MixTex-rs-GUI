@@ -26,7 +26,7 @@ tauri-plugin-dialog = "2"
 tauri-plugin-fs = "2"
 tauri-plugin-shell = "2"
 tauri-plugin-os = "2"
-tauri-plugin-http = { version =  "2" ,features = ["multipart"] }
+tauri-plugin-http = { version =  "2" ,features = ["multipart","json"] }
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 
