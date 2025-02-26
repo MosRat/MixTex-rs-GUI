@@ -1,4 +1,4 @@
-// 自定义替换规则 , 用于以下函数的dictionary:
+// 自定义替换规则 , 用于以下函数的 dictionary:
 // function replaceWithDictionary(input, dictionary) {
 //     let output = input;
 //     for (const [key, value] of Object.entries(dictionary)) {
@@ -12,7 +12,7 @@ window.replaceRules={
     // "\\)": "$$",
     // "\\[": "$$$",
     // "\\]": "$$$",
-    "\\(": "",
+    "\\(": "", // 也可以用正则表达式
     "\\)": "",
     "\\[": "",
     "\\]": "",
