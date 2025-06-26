@@ -1,0 +1,11 @@
+[package]
+name = "gex"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+
+
+[dependencies]
+gex-sys = { path = "./gex-sys" }
+thiserror = "1.0"

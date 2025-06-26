@@ -11,6 +11,7 @@ use tauri::{Listener, State};
 // use tauri_plugin_dialog::DialogExt;
 
 use anyhow::Result;
+use gex::GexOcrModel;
 
 pub trait OcrModel: Sized + Send + Sync {
     fn build() -> Result<Self>;
@@ -90,7 +91,7 @@ pub enum GenEvent {
 #[tauri::command]
 pub async fn generate(
     screenshot: State<'_, ScreenshotWrapper>,
-    model: State<'_, Model<MixTexOnnx>>,
+    model: State<'_, Model<GexOcrModel>>,
     window: tauri::WebviewWindow,
     ch: tauri::ipc::Channel<GenEvent>,
     backend: String,

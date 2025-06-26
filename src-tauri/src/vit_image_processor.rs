@@ -1,9 +1,8 @@
 use std::path::Path;
 
 use image::imageops::FilterType;
-use image::{
-    load_from_memory, DynamicImage, GenericImage, GenericImageView, ImageReader, Rgb, Rgb32FImage,
-};
+use image::{imageops, load_from_memory, DynamicImage, GenericImage, GenericImageView, ImageReader, Rgb, Rgb32FImage, RgbImage};
+
 
 struct Config {
     pub width: u32,
@@ -26,52 +25,64 @@ pub fn resize(img: DynamicImage) -> DynamicImage {
 }
 
 pub fn padding(img: DynamicImage) -> DynamicImage {
-    let mut background = DynamicImage::from(Rgb32FImage::from_pixel(
+    let mut background = RgbImage::from_pixel(
         CONFIG.width,
         CONFIG.height,
-        Rgb::from([255_f32, 255_f32, 255_f32]),
-    ));
-    if img.width() <= CONFIG.width && img.height() <= CONFIG.height {
-        background
-            .sub_image(
-                (CONFIG.width - img.width()) / 2,
-                (CONFIG.height - img.height()) / 2,
-                img.width(),
-                img.height(),
-            )
-            .copy_from(&img, 0, 0)
-            .expect("fail!");
-    } else {
-        let scale = (CONFIG.width as f32 / img.width() as f32)
-            .min(CONFIG.height as f32 / img.height() as f32);
-        let img_resize = img.resize_exact(
-            (img.width() as f32 * scale) as u32,
-            (img.height() as f32 * scale) as u32,
-            FilterType::Lanczos3,
-        );
-        background
-            .sub_image(
-                (CONFIG.width - img_resize.width()) / 2,
-                (CONFIG.height - img_resize.height()) / 2,
-                img_resize.width(),
-                img_resize.height(),
-            )
-            .copy_from(&img_resize, 0, 0)
-            .expect("fail!");
-    }
+        Rgb::from([255, 255, 255]),
+    );
+    // 直接居中填充
+    let img_resized = img.resize(CONFIG.width, CONFIG.height, imageops::CatmullRom);
+    let x = i64::abs(CONFIG.width as i64 - img_resized.width() as i64) / 2;
+    let y = i64::abs(CONFIG.height as i64 - img_resized.height() as i64) / 2;
+    imageops::overlay(
+        &mut background,
+        img_resized.as_rgb8().unwrap(),
+        x,
+        y,
+    );
+    DynamicImage::ImageRgb8(background)
+
+    // if img.width() <= CONFIG.width && img.height() <= CONFIG.height {
+    //     background
+    //         .sub_image(
+    //             (CONFIG.width - img.width()) / 2,
+    //             (CONFIG.height - img.height()) / 2,
+    //             img.width(),
+    //             img.height(),
+    //         )
+    //         .copy_from(&img, 0, 0)
+    //         .expect("fail!");
+    // } else {
+    //     let scale = (CONFIG.width as f32 / img.width() as f32)
+    //         .min(CONFIG.height as f32 / img.height() as f32);
+    //     let img_resize = img.resize_exact(
+    //         (img.width() as f32 * scale) as u32,
+    //         (img.height() as f32 * scale) as u32,
+    //         FilterType::Lanczos3,
+    //     );
+    //     background
+    //         .sub_image(
+    //             (CONFIG.width - img_resize.width()) / 2,
+    //             (CONFIG.height - img_resize.height()) / 2,
+    //             img_resize.width(),
+    //             img_resize.height(),
+    //         )
+    //         .copy_from(&img_resize, 0, 0)
+    //         .expect("fail!");
+    // }
     // background.to_rgba8().save("./img.png").expect("fail to padding!");
     // info!("{:?} {:?} {:?}",background.color(),background.width(),background.height());
-    DynamicImage::from(background.to_rgba8())
+    // DynamicImage::from(background.to_rgba8())
 }
 
 pub fn rescale_and_normalize(img: DynamicImage) -> DynamicImage {
     let (width, height) = img.dimensions();
     let mut rescaled_img = DynamicImage::new_rgb32f(width, height);
     let pixel_ref = rescaled_img.as_mut_rgb32f().unwrap();
-    img.into_rgba8()
+    img.into_rgb8()
         .enumerate_pixels()
         .for_each(|(x, y, pixel)| {
-            let rescaled_pixel = image::Rgb([
+            let rescaled_pixel = Rgb([
                 (pixel[0] as f32 * CONFIG.rescale_factor - CONFIG.norm_mean) / CONFIG.norm_std,
                 (pixel[1] as f32 * CONFIG.rescale_factor - CONFIG.norm_mean) / CONFIG.norm_std,
                 (pixel[2] as f32 * CONFIG.rescale_factor - CONFIG.norm_mean) / CONFIG.norm_std,

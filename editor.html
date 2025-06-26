@@ -73,13 +73,13 @@
                                             <div style="display: flex;justify-content: space-between">
                                                 <button class="btn theme-fill theme-dark-button" style="width: 65px;height: 30px"  id="start">识别</button>
                                                 <button class="btn theme-fill theme-dark-button" style="width: 75px;height: 30px;margin-left: 8px"  id="strip">去除包裹</button>
-                                                <button class="btn theme-fill theme-dark-button" style="width: 50px;height: 30px;display: none" id="stop">停止</button>
+                                                <button class="btn theme-fill theme-dark-button" style="width: 75px;height: 30px;display: none" id="stop" disabled>推理中..</button>
                                             </div>
                                         </div>
                                         <div id="img-canvas">
-                                        <canvas id="screenshot" width="300px" height="100px"
-                                                style="border-radius: 4px;border: 1px rgba(25,25,25,0.1) solid;box-shadow: 2px 4px 20px rgba(25,25,25,0.1);background-color: rgba(175,175,175,0.33)">
-                                        </canvas>
+                                            <canvas id="screenshot" width="300px" height="100px"
+                                                    style="border-radius: 4px;border: 1px rgba(25,25,25,0.1) solid;box-shadow: 2px 4px 20px rgba(25,25,25,0.1);background-color: rgba(175,175,175,0.33)">
+                                            </canvas>
                                         </div>
                                     </div>
                                 </div>
@@ -95,18 +95,19 @@
                         <div class="card-header">
                             <h2><i class="fa fa-arrow-circle-down"></i>&nbsp;输出区域<span>Output</span></h2>
                         </div>
-                        <div style="display: flex;flex-direction: row">
+                        <div style="display: flex;flex-direction: column">
+                            <div class="card-body" style="width: 100%;border-left: rgba(0,0,0,0.1) 1px solid;min-height: 20vh;">
+                                <div class="form-group" id="katex">
+                                </div>
+                            </div>
                             <div class="card-body">
                                 <div class="form-group">
-                                    <div class="output" id="wrap_output" style="overflow: hidden;!important;max-width: 40vw!important;background-size: contain"></div>
+                                    <div class="output" id="wrap_output" style="overflow: hidden;!important;max-width: 40vw!important;background-size: contain;display: none" ></div>
                                 </div>
                                 <div id="wrap_action"></div>
                             </div>
 
-                            <div class="card-body" style="width: 50%;border-left: rgba(0,0,0,0.1) 1px solid">
-                                <div class="form-group" id="katex">
-                                </div>
-                            </div>
+
                         </div>
                     </div>
                 </div>

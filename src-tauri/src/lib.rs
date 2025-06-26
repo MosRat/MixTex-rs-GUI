@@ -18,6 +18,8 @@ mod config;
 mod error;
 pub mod mixtex;
 mod model;
+mod doc_convert;
+mod gex_backend;
 
 use log::{info, warn};
 use std::sync::OnceLock;
@@ -30,6 +32,7 @@ use crate::setup::setup;
 use crate::tray::create_tray;
 use tauri_plugin_log::{Target, TargetKind};
 use tauri_plugin_notification::NotificationExt;
+use crate::doc_convert::convert_doc;
 
 pub static APP: OnceLock<AppHandle> = OnceLock::new();
 
@@ -92,6 +95,8 @@ pub fn run() {
             generate,
             get_screenshot,
             set_screenshot,
+            convert_doc,
+
         ])
         // .on_system_tray_event(tray_event_handler)
         .build(tauri::generate_context!())

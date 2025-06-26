@@ -25,19 +25,47 @@ function processClipboardImage(items) {
     }
 }
 
+async function processTextareaInput() {
+    const tauri = window.__TAURI__
+    const { invoke } = tauri.core
+    // 获取textarea元素
+    const textarea = document.getElementById('txta_input');
+
+    if (!textarea) {
+        console.error('Textarea with id "txta_input" not found');
+        return null;
+    }
+
+    // 获取输入内容
+    const inputContent = textarea.value;
+
+    try {
+        // 调用invoke函数（假设已定义）
+        return await invoke("convert_doc", {latexContent:inputContent});
+    } catch (error) {
+        console.error('Error in invoke convert_doc:', error);
+        throw error;
+    }
+}
+if (typeof window !== 'undefined') {
+    window.processTextareaInput = processTextareaInput;
+}
 
 const initTauri = async () => {
     const tauri = window.__TAURI__
-    const { listen } = tauri.event
     const { invoke } = tauri.core
-    const { getCurrentWindow } = tauri.window
+
+    const { listen } = tauri.event
+    const { getCurrentWindow,Effect } = tauri.window
     const { revealItemInDir } = tauri.opener;
     const { appConfigDir } = tauri.path
     console.log(tauri)
 
     // fix tauri bug https://github.com/tauri-apps/tauri/issues/8632#issuecomment-975607891
     await getCurrentWindow().show();
-    await getCurrentWindow().setDecorations(true);
+    await getCurrentWindow().setFocus();
+    // await getCurrentWindow().setDecorations(true);
+    // await getCurrentWindow().setEffects({effects:[Effect.TabbedLight,Effect.Mica]});
 
 
     // 假设显示尺寸固定为 200x200

@@ -1,6 +1,6 @@
 [package]
 name = "mixtex-rs-gui"
-version = "0.2.2"
+version = "0.7.0"
 description = "Mixtex gui app"
 authors = ["MosRat"]
 license = "GPL-3.0-only"
@@ -26,28 +26,27 @@ tauri-plugin-dialog = "2"
 tauri-plugin-fs = "2"
 tauri-plugin-shell = "2"
 tauri-plugin-os = "2"
-tauri-plugin-http = { version =  "2" ,features = ["multipart","json"] }
+tauri-plugin-http = { version =  "2" ,features = ["multipart", "json"] }
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 
-tokenizers = { version = "0.20.0", features = ["default"] }
-image = { version = "0.25.2", features = ["default"] }
-ort = { version = "2.0.0-rc.9",default-features = false, features = ["ndarray"] }
-ndarray = { version = "0.16.1" }
-xcap = {version = "0.0.14" }
+tokenizers = { version = "0.21", features = ["default"] }
+image = { version = "0.25", features = ["default"] }
+gex = {path = "./gex"}
+xcap = {version = "0.6" }
 log = "0.4.22"
 tokio = "1.41.1"
 anyhow = "1.0.93"
-tauri-plugin-clipboard-manager = "2.0.2"
-tauri-plugin-opener = "2.2.5"
+tauri-plugin-clipboard-manager = "2"
+tauri-plugin-opener = "2"
 tauri-plugin-process = "2"
 
-
-
-
-
+[workspace]
+members = [
+    "gex",
+]
 [target.'cfg(windows)'.dependencies.windows]
-version = "0.58.0"
+version = "0.61.3"
 features = ["Win32_Foundation", "Foundation", "Foundation_Collections", "AI", "AI_MachineLearning", "Graphics", "Graphics_Imaging", "Media", "Win32_System_WinRT", "Storage_Streams"]
 
 [target.'cfg(target_os = "linux")'.dependencies]

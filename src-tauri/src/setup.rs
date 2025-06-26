@@ -3,7 +3,7 @@ use crate::mixtex::Model;
 use crate::window::build_screenshot_window;
 use crate::{hotkey, APP};
 
-use crate::onnx::MixTexOnnx;
+// use crate::onnx::MixTexOnnx;
 use crate::screenshot::ScreenshotWrapper;
 use anyhow::Result;
 use image::{EncodableLayout, GenericImageView};
@@ -11,6 +11,7 @@ use log::{info, warn};
 use serde_json::json;
 use tauri::{AppHandle, DragDropEvent, Emitter, Listener, Manager, WindowEvent};
 use tauri_plugin_os::{version, Version};
+use gex::GexOcrModel;
 
 pub(crate) async fn setup(app: AppHandle) -> Result<()> {
     // app.get_webview_window("main").unwrap().clear_all_browsing_data()?;
@@ -56,7 +57,7 @@ async fn init_os_info(app: AppHandle) {
 }
 
 async fn init_states(app: AppHandle) {
-    app.manage(Model::<MixTexOnnx>::new());
+    app.manage(Model::<GexOcrModel>::new());
     app.manage(ScreenshotWrapper::new());
     init_listeners(app);
 }

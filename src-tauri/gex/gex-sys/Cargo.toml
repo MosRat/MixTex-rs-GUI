@@ -1,0 +1,11 @@
+[package]
+name = "gex-sys"
+version = "0.1.0"
+edition = "2021"
+links = "libgex"
+
+[build-dependencies]
+cc = "1.0"
+
+[dependencies]
+libc = "0.2"

@@ -2,6 +2,12 @@
   "$schema": "./config-schema.json",
   "identifier": "com.mosrat.mixtex-rs-gui",
   "bundle": {
+    "resources": {
+      "./bin/libgex.dll": "./libgex.dll",
+      "./bin/openblas.dll": "./openblas.dll",
+      "../models/mixtex-dec-Q4_K_M.gguf": "models/mixtex-dec-Q4_K_M.gguf",
+      "../models/encoder.onnx": "models/encoder.onnx"
+    },
     "targets": ["nsis","msi"],
     "windows": {
       "certificateThumbprint": null,

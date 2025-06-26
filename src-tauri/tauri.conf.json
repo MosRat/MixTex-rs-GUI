@@ -34,11 +34,18 @@
           "libxrandr2"
         ]
       }
+    },
+    "externalBin": [
+      "bin/pandoc"
+    ],
+    "resources": {
+      "../models/mixtex-dec-Q4_K_M.gguf": "models/mixtex-dec-Q4_K_M.gguf",
+      "../models/encoder.onnx": "models/encoder.onnx"
     }
   },
   "productName": "mixtex-rs-gui",
   "mainBinaryName": "mixtex-rs-gui",
-  "version": "0.6.1",
+  "version": "0.7.0",
   "identifier": "com.mosrat.mixtex-rs-gui",
   "plugins": {},
   "app": {
@@ -48,7 +55,7 @@
         "title": "MixTex",
         "label": "main",
         "transparent": true,
-        "decorations": false,
+        "decorations": true,
         "alwaysOnTop": false,
         "resizable": false,
         "width": 800,
@@ -61,7 +68,7 @@
         "windowEffects": {
           "effects": [
             "tabbedLight",
-            "acrylic"
+            "micaLight"
           ]
         },
         "center": true
