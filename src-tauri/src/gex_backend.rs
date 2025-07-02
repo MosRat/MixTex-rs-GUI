@@ -1,8 +1,7 @@
-use std::path::Path;
 use std::sync::Arc;
 use gex::{GexContext, GexOcrModel};
 use anyhow::Result;
-use log::{debug, info};
+use log::{info};
 use tauri::Manager;
 use tauri::path::BaseDirectory;
 use crate::APP;

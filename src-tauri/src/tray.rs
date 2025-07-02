@@ -10,7 +10,7 @@ pub fn create_tray(app: &AppHandle) -> Result<()> {
     let _tray = TrayIconBuilder::new()
         .icon(app.default_window_icon().unwrap().clone())
         .tooltip("Ocr your latex!")
-        .menu_on_left_click(false)
+        .show_menu_on_left_click(true)
         .on_tray_icon_event(|tray, event| match event {
             TrayIconEvent::Click {
                 button: MouseButton::Left,

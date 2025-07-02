@@ -2,7 +2,7 @@ use std::ffi::{c_char, c_int, c_void, CStr, CString};
 use std::path::Path;
 use std::sync::Arc;
 
-use gex_sys::{get_last_error, gex_context, gex_error, gex_free, gex_inference_raw_mem, gex_inference_raw_mem_stream, gex_init_with_onnx, size_t};
+use gex_sys::{get_last_error, gex_context, gex_error, gex_free, gex_inference_raw_mem, gex_inference_raw_mem_stream, gex_init_with_onnx, size_t, gex_stream_callback_t};
 use thiserror::Error;
 
 #[derive(Error, Debug)]
@@ -43,6 +43,14 @@ impl Drop for GexContext {
 unsafe impl Send for GexContext {}
 unsafe impl Sync for GexContext {}
 
+#[repr(C)]
+struct CallbackWrapper<F>
+where
+    F: FnMut(&str) -> bool,
+{
+    callback: F,
+}
+
 impl GexContext {
     pub fn new_with_onnx(model_path: &Path, onnx_path: &Path) -> Result<Self> {
         let model_path = CString::new(model_path.to_string_lossy().as_bytes())?;
@@ -71,39 +79,43 @@ impl GexContext {
     where
         F: FnMut(&str) -> bool,
     {
-        // let callback_wrapper = Box::into_raw(Box::new(|
-        //     token: *const c_char,
-        //     user_data: *mut c_void,
-        // | -> c_int
-        // {
-        //     if token.is_null() {
-        //         return 0;
-        //     }
-        // 
-        //     let token_str = unsafe { CStr::from_ptr(token) };
-        //     match token_str.to_str() {
-        //         Ok(s) => callback(s) as i32,
-        //         Err(_) => 0,
-        //     }
-        // }));
+        extern "C" fn callback_wrapper<F>(token: *const c_char, user_data: *mut c_void) -> c_int
+        where
+            F: FnMut(&str) -> bool,
+        {
+            if token.is_null() {
+                return 0;
+            }
+
+            let wrapper = unsafe { &mut *(user_data as *mut CallbackWrapper<F>) };
+            let token_str = unsafe { CStr::from_ptr(token) };
+            match token_str.to_str() {
+                Ok(s) => (wrapper.callback)(s) as c_int,
+                Err(_) => 0,
+            }
+        }
+
+        let wrapper = CallbackWrapper { callback };
+        let wrapper_ptr = &wrapper as *const CallbackWrapper<F> as *mut c_void;
+
+        let callback_struct = gex_stream_callback_t {
+            callback: Some(callback_wrapper::<F>),
+            user_data: wrapper_ptr,
+        };
 
         let result_ptr = unsafe {
-            gex_inference_raw_mem(
+            gex_inference_raw_mem_stream(
                 self.ctx,
                 buf.as_ptr(),
                 buf.len() as size_t,
-                // callback_wrapper  as *mut c_void
+                callback_struct,
             )
         };
 
-        unsafe {
-            if result_ptr.is_null() {
-                Err(get_last_gex_error())
-            } else {
-                let res = CStr::from_ptr(result_ptr).to_str()?.to_string();
-                callback(res.as_str());
-                Ok(res)
-            }
+        if result_ptr.is_null() {
+            Err(get_last_gex_error())
+        } else {
+            unsafe { Ok(CStr::from_ptr(result_ptr).to_str()?.to_string()) }
         }
     }
 }

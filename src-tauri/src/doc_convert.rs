@@ -43,6 +43,7 @@ pub async fn convert_doc(
             input_path.to_str().ok_or("临时文件路径包含非法字符")?,
             "-o",
             output_path.to_str().ok_or("输出文件路径包含非法字符")?,
+            "--mathml",
         ]);
 
     let conversion_result = sidecar_command
@@ -68,7 +69,13 @@ pub async fn convert_doc(
         output_path.to_str().unwrap().replace("\\", "\\\\")
     );
 
-    let ps_status = Command::new("powershell")
+    let ps_status = Command::new("powershell.exe")
+        .env("POWERSHELL_UPDATECHECK", "Off")
+        .arg("-NonInteractive")
+        .arg("-WindowStyle")
+        .arg("Hidden")
+        .arg("-NoProfile")
+        .arg("-NoLogo")
         .arg("-Command")
         .arg(&ps_script)
         .status()

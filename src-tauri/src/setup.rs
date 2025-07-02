@@ -10,7 +10,7 @@ use image::{EncodableLayout, GenericImageView};
 use log::{info, warn};
 use serde_json::json;
 use tauri::{AppHandle, DragDropEvent, Emitter, Listener, Manager, WindowEvent};
-use tauri_plugin_os::{version, Version};
+use tauri_plugin_os::{version, Version,};
 use gex::GexOcrModel;
 
 pub(crate) async fn setup(app: AppHandle) -> Result<()> {
@@ -31,7 +31,10 @@ pub(crate) async fn setup(app: AppHandle) -> Result<()> {
 
     // setup configs
     tauri::async_runtime::spawn(init_configs(app.clone()));
+    
+    info!("Application initialized");
 
+    
     Ok(())
 }
 
@@ -42,24 +45,36 @@ async fn init_os_info(app: AppHandle) {
     {
         js += r#"const whiteBg = () => document.getElementsByTagName("html")[0].style.setProperty('background-color', '#E8E8E8', 'important');"#;
         js += match version() {
-            Version::Semantic(i, j, k) if k > 22000 => {
+            Version::Semantic(i, j, k)  => {
                 // Windows 10 和 11 共享相同的主要版本和次要版本 i, j ，Windows 11 通过其内部版本号 k 22000 进行区分
-                info!(
+                if k > 22000 {
+                    info!(
                     "Windows 11 detected, version: {}",
                     format!("Os: {i} {j} {k}")
                 );
-                r#""#
+                    r#""#
+                }else {
+                    info!(
+                    "Windows 10 detected, version: {}",
+                    format!("Os: {i} {j} {k}")
+                );
+                    r#"whiteBg();document.addEventListener("DOMContentLoaded", whiteBg);"#
+                }
             }
             _ => r#"whiteBg();document.addEventListener("DOMContentLoaded", whiteBg);"#,
         };
     }
-    main_window.eval(&js).unwrap()
+    main_window.eval(&js).unwrap();
+    info!("os_info initialized");
+
 }
 
 async fn init_states(app: AppHandle) {
     app.manage(Model::<GexOcrModel>::new());
     app.manage(ScreenshotWrapper::new());
     init_listeners(app);
+    info!("app_states initialized");
+
 }
 
 async fn init_configs(app: AppHandle) {
@@ -75,6 +90,8 @@ async fn init_configs(app: AppHandle) {
 
         let _ = std::fs::write(&custom_js_path, CUSTOM_JS);
     }
+    info!("configs initialized");
+
 }
 
 fn init_listeners(app_handle: AppHandle) {

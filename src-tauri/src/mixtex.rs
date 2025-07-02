@@ -11,6 +11,7 @@ use tauri::{Listener, State};
 // use tauri_plugin_dialog::DialogExt;
 
 use anyhow::Result;
+use log::{error, info};
 use gex::GexOcrModel;
 
 pub trait OcrModel: Sized + Send + Sync {
@@ -41,11 +42,12 @@ impl<M: OcrModel> DerefMut for Model<M> {
 
 impl<M: OcrModel> Model<M> {
     pub fn new() -> Model<M> {
-        Model {
+        let model = Model {
             model: Mutex::new(
                 M::build()
                     .inspect_err(|e| {
                         use tauri_plugin_dialog::{DialogExt, MessageDialogKind};
+                        error!("Model load fail! {:?}", e);
                         APP.get()
                             .unwrap()
                             .dialog()
@@ -56,7 +58,9 @@ impl<M: OcrModel> Model<M> {
                     })
                     .unwrap(),
             ),
-        }
+        };
+        info!("Model initialized");
+        model
     }
 
     pub fn inference(&self, img: &[f32]) -> Result<String> {

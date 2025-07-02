@@ -233,10 +233,10 @@
 // }
 
 use log::info;
-use std::str::FromStr;
+// use std::str::FromStr;
 // use tokenizers::Tokenizer;
 
-use crate::model::{DECODER_BYTES, ENCODER_BYTES, TOKENIZER_STR};
+// use crate::model::{DECODER_BYTES, ENCODER_BYTES, TOKENIZER_STR};
 use anyhow::Result;
 use crate::mixtex::OcrModel;
 

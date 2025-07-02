@@ -5,10 +5,15 @@
     "resources": {
       "./bin/libgex.dll": "./libgex.dll",
       "./bin/openblas.dll": "./openblas.dll",
+      "./bin/dbghelp.dll": "./dbghelp.dll",
+      "./bin/vcomp140.dll": "./vcomp140.dll",
       "../models/mixtex-dec-Q4_K_M.gguf": "models/mixtex-dec-Q4_K_M.gguf",
       "../models/encoder.onnx": "models/encoder.onnx"
     },
-    "targets": ["nsis","msi"],
+    "targets": [
+      "nsis",
+      "msi"
+    ],
     "windows": {
       "certificateThumbprint": null,
       "digestAlgorithm": "sha256",
@@ -20,11 +25,17 @@
       "nsis": {
         "displayLanguageSelector": true,
         "installerIcon": "icons/icon.ico",
-        "languages": ["SimpChinese", "English"],
+        "languages": [
+          "SimpChinese",
+          "English"
+        ],
         "installMode": "perMachine"
       },
       "wix": {
-        "language": ["en-US","zh-CN"]
+        "language": [
+          "en-US",
+          "zh-CN"
+        ]
       }
     }
   }

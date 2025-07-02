@@ -3,7 +3,7 @@
 #![allow(non_snake_case)]
 #![allow(dead_code)]
 
-use std::ffi::{c_char, c_float, c_int, c_uchar, c_void,c_ulonglong};
+use std::ffi::{c_char, c_float, c_int, c_uchar, c_void, c_ulonglong};
 pub type size_t = c_ulonglong;
 
 #[repr(C)]
@@ -26,8 +26,12 @@ pub struct gex_device_list {
 }
 
 pub type gex_context = *mut c_void;
-pub type gex_stream_callback =   *mut c_void;
-// pub type gex_stream_callback =  unsafe extern "C" fn (token: *const c_char, user_data: *mut c_void) -> c_int;
+
+#[repr(C)]
+pub struct gex_stream_callback_t {
+    pub callback: Option<unsafe extern "C" fn(token: *const c_char, user_data: *mut c_void) -> c_int>,
+    pub user_data: *mut c_void,
+}
 
 extern "C" {
     pub fn gex_error_set(msg: *const c_char);
@@ -49,7 +53,7 @@ extern "C" {
     pub fn gex_inference_path_stream(
         ctx: gex_context,
         image_path: *const c_char,
-        cb: gex_stream_callback,
+        cb: gex_stream_callback_t,
     ) -> *const c_char;
     pub fn gex_inference_mem(ctx: gex_context, buf: *const c_uchar, buf_size: size_t) -> *const c_char;
     pub fn gex_inference_raw_mem(ctx: gex_context, buf: *const c_float, buf_size: size_t) -> *const c_char;
@@ -57,13 +61,13 @@ extern "C" {
         ctx: gex_context,
         buf: *const c_uchar,
         buf_size: size_t,
-        cb: gex_stream_callback,
+        cb: gex_stream_callback_t,
     ) -> *const c_char;
     pub fn gex_inference_raw_mem_stream(
         ctx: gex_context,
         buf: *const c_float,
         buf_size: size_t,
-        cb: gex_stream_callback,
+        cb: gex_stream_callback_t,
     ) -> *const c_char;
 
     pub fn gex_device_list_get() -> gex_device_list;

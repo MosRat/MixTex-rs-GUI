@@ -1,7 +1,7 @@
 use std::path::Path;
 
 use image::imageops::FilterType;
-use image::{imageops, load_from_memory, DynamicImage, GenericImage, GenericImageView, ImageReader, Rgb, Rgb32FImage, RgbImage};
+use image::{imageops, load_from_memory, DynamicImage, GenericImage, GenericImageView, ImageReader, Rgb, RgbImage};
 
 
 struct Config {

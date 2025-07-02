@@ -43,13 +43,13 @@ fn main() {
             panic!("Failed to copy {} to {}", src.display(), dst.display())
         });
     }
-    #[cfg(target_os = "windows")]
-    {     
-        let lib_name = "openblas.dll";
-        let src = lib_path.join(lib_name);
-        let dst_bin = dst_bin_dir.join(lib_name);
-        std::fs::copy(&src, &dst_bin).unwrap_or_else(|_| {
-            panic!("Failed to copy {} to {}", src.display(), dst.display())
-        });
-    }
+    // #[cfg(target_os = "windows")]
+    // {     
+    //     let lib_name = "openblas.dll";
+    //     let src = lib_path.join(lib_name);
+    //     let dst_bin = dst_bin_dir.join(lib_name);
+    //     std::fs::copy(&src, &dst_bin).unwrap_or_else(|_| {
+    //         panic!("Failed to copy {} to {}", src.display(), dst.display())
+    //     });
+    // }
 }

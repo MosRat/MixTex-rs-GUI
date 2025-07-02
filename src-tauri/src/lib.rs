@@ -70,6 +70,7 @@ pub fn run() {
                     // Target::new(TargetKind::Webview),
                 ])
                 .level(log::LevelFilter::Info)
+                .max_file_size(100_000)
                 .build(),
         )
         // .plugin(tauri_plugin_clipboard::init())
@@ -100,7 +101,22 @@ pub fn run() {
         ])
         // .on_system_tray_event(tray_event_handler)
         .build(tauri::generate_context!())
-        .expect("error while running tauri application")
+        .inspect_err(|e| {
+            #[cfg(target_os = "windows")]
+            unsafe {
+                use windows::Win32::UI::WindowsAndMessaging::{MessageBoxA,MB_OK};
+                use windows::core::{s,PCSTR};
+                use std::ffi::CString;
+
+                let error_message = CString::new(format!("Error setup app :\n{:?}", e)).unwrap();
+                let message_ptr = PCSTR::from_raw(error_message.as_bytes().as_ptr());
+
+                MessageBoxA(None, message_ptr, s!("Fatal error"), MB_OK);
+            }
+
+        }
+        )
+        .expect("err init app!")
         // 保活
         .run(|app_handle, event| match event {
             tauri::RunEvent::WindowEvent { label, event, .. } => {
