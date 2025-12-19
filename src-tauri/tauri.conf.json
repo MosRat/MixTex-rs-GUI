@@ -45,7 +45,7 @@
   },
   "productName": "mixtex-rs-gui",
   "mainBinaryName": "mixtex-rs-gui",
-  "version": "0.7.1",
+  "version": "0.7.2",
   "identifier": "com.mosrat.mixtex-rs-gui",
   "plugins": {},
   "app": {

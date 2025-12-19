@@ -1,6 +1,6 @@
 [package]
 name = "mixtex-rs-gui"
-version = "0.7.0"
+version = "0.7.2"
 description = "Mixtex gui app"
 authors = ["MosRat"]
 license = "GPL-3.0-only"

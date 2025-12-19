@@ -185,17 +185,17 @@ pub fn screenshot_window() -> WebviewWindow {
 
 pub fn build_formula_window() -> (WebviewWindow, bool) {
     let app_handle = APP.get().unwrap();
-    match app_handle.get_webview_window("formula") {
+    match app_handle.get_webview_window("main") {
         Some(window) => {
             window.show().unwrap();
             window.set_focus().unwrap();
             (window, true)
         }
         None => {
-            info!("Window not existence, Creating new window: {}", "formula");
+            info!("Window not existence, Creating new window: {}", "main");
             let builder = tauri::WebviewWindowBuilder::new(
                 app_handle,
-                "formula",
+                "main",
                 // tauri::WebviewUrl::External("https://www.latexlive.com/".parse().unwrap()),
                 tauri::WebviewUrl::App("editor.html".parse().unwrap()),
             )
@@ -236,9 +236,6 @@ pub fn build_formula_window() -> (WebviewWindow, bool) {
             (window, false)
         }
     }
-    // let (window, _exists) = build_window("formula", "Formula");
-    // window.set_resizable(false).unwrap();
-    // window.eval(include_str!("../scripts/formula_editor.js")).unwrap()
 }
 
 #[tauri::command(async)]

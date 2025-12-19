@@ -6,12 +6,12 @@ use crate::{hotkey, APP};
 // use crate::onnx::MixTexOnnx;
 use crate::screenshot::ScreenshotWrapper;
 use anyhow::Result;
+use gex::GexOcrModel;
 use image::{EncodableLayout, GenericImageView};
 use log::{info, warn};
 use serde_json::json;
 use tauri::{AppHandle, DragDropEvent, Emitter, Listener, Manager, WindowEvent};
-use tauri_plugin_os::{version, Version,};
-use gex::GexOcrModel;
+use tauri_plugin_os::{version, Version};
 
 pub(crate) async fn setup(app: AppHandle) -> Result<()> {
     // app.get_webview_window("main").unwrap().clear_all_browsing_data()?;
@@ -31,10 +31,9 @@ pub(crate) async fn setup(app: AppHandle) -> Result<()> {
 
     // setup configs
     tauri::async_runtime::spawn(init_configs(app.clone()));
-    
+
     info!("Application initialized");
 
-    
     Ok(())
 }
 
@@ -45,19 +44,19 @@ async fn init_os_info(app: AppHandle) {
     {
         js += r#"const whiteBg = () => document.getElementsByTagName("html")[0].style.setProperty('background-color', '#E8E8E8', 'important');"#;
         js += match version() {
-            Version::Semantic(i, j, k)  => {
+            Version::Semantic(i, j, k) => {
                 // Windows 10 和 11 共享相同的主要版本和次要版本 i, j ，Windows 11 通过其内部版本号 k 22000 进行区分
                 if k > 22000 {
                     info!(
-                    "Windows 11 detected, version: {}",
-                    format!("Os: {i} {j} {k}")
-                );
+                        "Windows 11 detected, version: {}",
+                        format!("Os: {i} {j} {k}")
+                    );
                     r#""#
-                }else {
+                } else {
                     info!(
-                    "Windows 10 detected, version: {}",
-                    format!("Os: {i} {j} {k}")
-                );
+                        "Windows 10 detected, version: {}",
+                        format!("Os: {i} {j} {k}")
+                    );
                     r#"whiteBg();document.addEventListener("DOMContentLoaded", whiteBg);"#
                 }
             }
@@ -66,7 +65,6 @@ async fn init_os_info(app: AppHandle) {
     }
     main_window.eval(&js).unwrap();
     info!("os_info initialized");
-
 }
 
 async fn init_states(app: AppHandle) {
@@ -74,24 +72,42 @@ async fn init_states(app: AppHandle) {
     app.manage(ScreenshotWrapper::new());
     init_listeners(app);
     info!("app_states initialized");
-
 }
 
-async fn init_configs(app: AppHandle) {
+async fn init_configs(app_handle: AppHandle) {
     // create custom.js
-    let config_dir = app.path().app_config_dir().unwrap();
+    let config_dir = app_handle.path().app_config_dir().unwrap();
     if !config_dir.exists() {
         let _ = std::fs::create_dir_all(&config_dir);
     }
     let custom_js_path = config_dir.join("custom.js");
+
     if std::fs::metadata(&custom_js_path).is_err() {
         let _ = std::fs::File::create(&custom_js_path);
         const CUSTOM_JS: &str = include_str!("../../docs/custom.js");
 
         let _ = std::fs::write(&custom_js_path, CUSTOM_JS);
     }
-    info!("configs initialized");
 
+    let version = app_handle.package_info().version.clone();
+    let app_name = app_handle.package_info().name.clone();
+    let inject_js = format!(
+        "window.custom_version = '{}_{}'\nconsole.log(String.raw`load script in {}`)\n",
+        app_name,
+        version,
+        custom_js_path.display()
+    );
+    let js_str = format!(
+        "{}\n{}",
+        std::fs::read_to_string(config_dir.join("custom.js")).unwrap(),
+        inject_js
+    );
+    app_handle
+        .get_webview_window("main")
+        .unwrap()
+        .eval(&js_str)
+        .unwrap();
+    info!("configs initialized");
 }
 
 fn init_listeners(app_handle: AppHandle) {
